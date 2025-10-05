@@ -1,0 +1,43 @@
+{
+  "name": "@jdboivin/jd-cli",
+  "version": "0.1.0",
+  "description": "Personal development CLI tools",
+  "bin": {
+    "jd": "./bin/jd"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "./scripts/check-dependencies.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdboivin/jd-cli.git"
+  },
+  "keywords": [
+    "cli",
+    "dev-tools",
+    "github",
+    "devcontainer"
+  ],
+  "author": "JD Boivin",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "@devcontainers/cli": "^0.55.0"
+  },
+  "optionalDependencies": {},
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "bin/",
+    "commands/",
+    "scripts/",
+    "utils/",
+    "README.md",
+    "LICENSE"
+  ]
+}

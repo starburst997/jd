@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# JD CLI - Personal Development Tools
+# Main entry point for the jd command
+
+set -e
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Source utility functions
+source "$ROOT_DIR/utils/common.sh"
+source "$ROOT_DIR/utils/dependency-check.sh"
+
+# Default configuration
+export JD_CLI_VERSION="${JD_CLI_VERSION:-0.1.0}"
+export JD_CLI_ROOT="$ROOT_DIR"
+
+# Parse global options
+VERBOSE=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --version)
+            echo "jd CLI version $JD_CLI_VERSION"
+            exit 0
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# Get the command
+COMMAND="${1:-}"
+shift || true
+
+# Show help if no command provided
+if [ -z "$COMMAND" ]; then
+    show_help
+    exit 1
+fi
+
+# Function to show help
+show_help() {
+    cat <<EOF
+jd - Personal Development CLI Tools
+
+Usage: jd [OPTIONS] COMMAND [ARGS...]
+
+Commands:
+    dev [template]    Apply devcontainer template to current project
+    pr [options]      Create GitHub pull request with defaults
+    init              Initialize jd CLI in current project
+    update            Update jd CLI to latest version
+    help              Show this help message
+
+Global Options:
+    -v, --verbose     Enable verbose output
+    -h, --help        Show help message
+    --version         Show version
+
+Examples:
+    jd dev                    # Apply default nodejs-postgres template
+    jd dev python             # Apply python template
+    jd pr --draft            # Create draft PR
+    jd pr --base develop     # Create PR against develop branch
+
+For more information about a specific command, run:
+    jd COMMAND --help
+EOF
+}
+
+# Check if command exists
+COMMAND_FILE="$ROOT_DIR/commands/$COMMAND.sh"
+if [ ! -f "$COMMAND_FILE" ]; then
+    error "Unknown command: $COMMAND"
+    echo "Run 'jd --help' for available commands"
+    exit 1
+fi
+
+# Source and execute the command
+source "$COMMAND_FILE"
+execute_command "$@"
