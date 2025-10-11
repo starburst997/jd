@@ -51,11 +51,31 @@ execute_command() {
     if [ -d "venv" ]; then
         info "Virtual environment already exists, activating..."
         echo "source venv/bin/activate"
+
+        if [ -f "requirements.txt" ]; then
+            info "Installing requirements.txt..."
+            if venv/bin/pip install -r requirements.txt; then
+                log "Requirements installed successfully"
+            else
+                error "Failed to install requirements"
+                return 1
+            fi
+        fi
     else
         info "Creating new virtual environment with $python_cmd..."
         if $python_cmd -m venv venv; then
             log "Virtual environment created successfully"
             echo "source venv/bin/activate"
+
+            if [ -f "requirements.txt" ]; then
+                info "Installing requirements.txt..."
+                if venv/bin/pip install -r requirements.txt; then
+                    log "Requirements installed successfully"
+                else
+                    error "Failed to install requirements"
+                    return 1
+                fi
+            fi
         else
             error "Failed to create virtual environment"
             return 1
