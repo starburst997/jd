@@ -13,12 +13,12 @@ BOLD='\033[1m'
 DIM='\033[2m'
 NC='\033[0m' # No Color
 
-# RGB/256 color codes for gradient effects
-GRADIENT_1='\033[38;5;39m'   # Bright blue
-GRADIENT_2='\033[38;5;75m'   # Light blue
-GRADIENT_3='\033[38;5;111m'  # Sky blue
-GRADIENT_4='\033[38;5;147m'  # Lavender
-GRADIENT_5='\033[38;5;183m'  # Light purple
+# JD Abyss color palette (24-bit RGB colors)
+ABYSS_CYAN='\033[38;2;23;187;221m'      # #17bbdd
+ABYSS_BLUE='\033[38;2;97;175;255m'      # #61afff
+ABYSS_PURPLE='\033[38;2;225;140;245m'   # #e18cf5
+ABYSS_GREEN='\033[38;2;152;210;128m'    # #98d280
+ABYSS_YELLOW='\033[38;2;255;225;105m'   # #ffe169
 
 # Logging functions
 log() {
@@ -47,17 +47,17 @@ debug() {
     fi
 }
 
-# Show colorful JD banner
+# Show colorful JD banner with Abyss theme gradient (Cyan → Green)
 show_banner() {
     # Only show banner if not in a pipe and stdout is a terminal
     if [ -t 1 ]; then
-        echo -e "${GRADIENT_1}"
-        echo -e "     ██╗${GRADIENT_2}██████╗ ${NC}"
-        echo -e "${GRADIENT_1}     ██║${GRADIENT_2}██╔══██╗${NC}"
-        echo -e "${GRADIENT_2}     ██║${GRADIENT_3}██║  ██║${NC}"
-        echo -e "${GRADIENT_3}██   ██║${GRADIENT_4}██║  ██║${NC}"
-        echo -e "${GRADIENT_4}╚█████╔╝${GRADIENT_5}██████╔╝${NC}"
-        echo -e "${GRADIENT_5} ╚════╝ ╚═════╝ ${NC}"
+        # Gradient from Cyan to Green (aquatic vibes)
+        echo -e "${ABYSS_CYAN}     ██╗██████╗ ${NC}"
+        echo -e "${ABYSS_CYAN}     ██║██╔══██╗${NC}"
+        echo -e "\033[38;2;40;198;209m     ██║██║  ██║${NC}"  # Cyan-teal blend
+        echo -e "\033[38;2;69;204;180m██   ██║██║  ██║${NC}"  # Teal-green blend
+        echo -e "\033[38;2;114;207;154m╚█████╔╝██████╔╝${NC}"  # Light green
+        echo -e "${ABYSS_GREEN} ╚════╝ ╚═════╝ ${NC}"
         echo -e "${DIM}   Personal Dev Toolkit${NC}"
         echo ""
     fi
