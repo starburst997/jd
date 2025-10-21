@@ -17,38 +17,6 @@ source "$ROOT_DIR/utils/dependency-check.sh"
 export JD_CLI_VERSION="${JD_CLI_VERSION:-0.1.0}"
 export JD_CLI_ROOT="$ROOT_DIR"
 
-# Parse global options
-VERBOSE=false
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -v|--verbose)
-            VERBOSE=true
-            shift
-            ;;
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-        --version)
-            echo "jd CLI version $JD_CLI_VERSION"
-            exit 0
-            ;;
-        *)
-            break
-            ;;
-    esac
-done
-
-# Get the command
-COMMAND="${1:-}"
-shift || true
-
-# Show help if no command provided
-if [ -z "$COMMAND" ]; then
-    show_help
-    exit 1
-fi
-
 # Function to show help
 show_help() {
     cat <<EOF
@@ -81,6 +49,38 @@ For more information about a specific command, run:
     jd COMMAND --help
 EOF
 }
+
+# Parse global options
+VERBOSE=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --version)
+            echo "jd CLI version $JD_CLI_VERSION"
+            exit 0
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# Get the command
+COMMAND="${1:-}"
+shift || true
+
+# Show help if no command provided
+if [ -z "$COMMAND" ]; then
+    show_help
+    exit 1
+fi
 
 # Check if command exists
 COMMAND_FILE="$ROOT_DIR/commands/$COMMAND.sh"
