@@ -18,7 +18,7 @@ _jd() {
         'venv:Create or activate Python virtual environment'
         'requirements:Generate requirements.txt from virtual environment'
         'claude-github:Update Claude Code OAuth token across GitHub repos and 1Password'
-        'init:Initialize jd CLI in current project'
+        'init:Setup and install CLI dependencies (optional first-time setup)'
         'update:Update jd CLI to latest version'
         'completion:Generate shell completion scripts'
         'help:Show help message'

@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
-# Initialize jd CLI and install all dependencies
+# Setup jd CLI and install CLI tool dependencies
 
 show_init_help() {
     cat <<EOF
-Initialize jd CLI and install all dependencies
+Setup jd CLI and install CLI tool dependencies
+
+This is an optional first-time setup command that helps install the CLI tools
+needed by jd commands.
 
 Usage: jd init [OPTIONS]
 
@@ -15,10 +18,10 @@ Options:
     -h, --help           Show this help message
 
 This command will:
-    1. Check system requirements
-    2. Install missing dependencies (GitHub CLI, devcontainer CLI)
+    1. Check system requirements (Node.js, npm)
+    2. Install missing CLI tools (GitHub CLI, devcontainer CLI)
     3. Configure GitHub authentication
-    4. Setup shell completions for your current shell
+    4. Setup shell completions for tab completion
     5. Verify everything is working
 
 Examples:
@@ -199,11 +202,12 @@ execute_command() {
     fi
 
     echo ""
-    log "jd CLI initialization complete!"
+    log "jd CLI setup complete!"
     echo ""
-    echo "Available commands:"
+    echo "All CLI dependencies are ready. You can now use jd commands:"
     echo "  jd dev [template]    - Apply devcontainer template"
     echo "  jd pr [options]      - Create GitHub pull request"
+    echo "  jd repo [options]    - Initialize GitHub repository"
     echo "  jd completion        - Setup shell completions"
     echo "  jd update            - Update jd CLI to latest version"
     echo "  jd --help            - Show all commands"

@@ -161,7 +161,8 @@
         font-size: 0.75rem;
         cursor: pointer;
         transition: all 0.2s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
         line-height: 1;
       }
 
@@ -358,23 +359,61 @@
     <section class="install-section">
       <div class="container">
         <h2 class="section-title">Installation</h2>
-        <p class="section-subtitle">Choose your preferred installation method</p>
-        <div style="max-width: 800px; margin: 2rem auto;">
-          <h3 style="color: #ffe169; font-size: 1.3rem; margin-bottom: 1rem; text-align: center;">Via curl (no dependencies)</h3>
+        <p class="section-subtitle">
+          Choose your preferred installation method
+        </p>
+        <div style="max-width: 800px; margin: 2rem auto">
+          <h3
+            style="
+              color: #ffe169;
+              font-size: 1.3rem;
+              margin-bottom: 1rem;
+              text-align: center;
+            "
+          >
+            Via curl (no dependencies)
+          </h3>
           <div class="code-wrapper">
-            <div class="code-block">curl -fsSL https://cli.jd.boiv.in/install.sh | bash</div>
-            <button class="copy-btn" onclick="copyToClipboard('curl -fsSL https://cli.jd.boiv.in/install.sh | bash', this)">Copy</button>
+            <div class="code-block">
+              curl -fsSL https://cli.jd.boiv.in/install.sh | bash
+            </div>
+            <button
+              class="copy-btn"
+              onclick="copyToClipboard('curl -fsSL https://cli.jd.boiv.in/install.sh | bash', this)"
+            >
+              Copy
+            </button>
           </div>
-          <p style="text-align: center; color: #96969d; margin-top: 0.5rem;">Requires only curl/wget and unzip</p>
+          <p style="text-align: center; color: #96969d; margin-top: 0.5rem">
+            Requires only curl/wget and unzip
+          </p>
 
-          <div style="margin: 2rem 0; text-align: center; color: #3f3f3f;">or</div>
+          <div style="margin: 2rem 0; text-align: center; color: #3f3f3f">
+            or
+          </div>
 
-          <h3 style="color: #ffe169; font-size: 1.3rem; margin-bottom: 1rem; text-align: center;">Via npm</h3>
+          <h3
+            style="
+              color: #ffe169;
+              font-size: 1.3rem;
+              margin-bottom: 1rem;
+              text-align: center;
+            "
+          >
+            Via npm
+          </h3>
           <div class="code-wrapper">
             <div class="code-block">npm install -g @jdboivin/cli</div>
-            <button class="copy-btn" onclick="copyToClipboard('npm install -g @jdboivin/cli', this)">Copy</button>
+            <button
+              class="copy-btn"
+              onclick="copyToClipboard('npm install -g @jdboivin/cli', this)"
+            >
+              Copy
+            </button>
           </div>
-          <p style="text-align: center; color: #96969d; margin-top: 0.5rem;">Requires Node.js and npm</p>
+          <p style="text-align: center; color: #96969d; margin-top: 0.5rem">
+            Requires Node.js and npm
+          </p>
         </div>
       </div>
     </section>
@@ -389,13 +428,28 @@
           <div class="command-card">
             <div class="command-name">jd init</div>
             <div class="command-desc">
-              Automated setup and dependency installation
+              Setup and install CLI dependencies (optional first-time setup)
             </div>
-            <div class="command-usage">jd init [--skip-deps]</div>
+            <div class="command-usage">
+              jd init [--skip-deps] [--skip-completions]
+            </div>
             <ul class="args-list">
               <li>
+                <span class="arg-desc">
+                  Helps set up the jd CLI by installing required tools like
+                  GitHub CLI, devcontainer CLI, and configuring shell
+                  completions.
+                </span>
+              </li>
+              <li>
                 <span class="arg-name">--skip-deps</span>
-                <span class="arg-desc">Skip dependency checks</span>
+                <span class="arg-desc"
+                  >Skip dependency installation checks</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--skip-completions</span>
+                <span class="arg-desc">Skip shell completion setup</span>
               </li>
             </ul>
           </div>
@@ -588,18 +642,23 @@
           <div class="command-card">
             <div class="command-name">jd claude-github</div>
             <div class="command-desc">
-              Update Claude Code OAuth token across all GitHub repositories and 1Password
+              Update Claude Code OAuth token across all GitHub repositories and
+              1Password
             </div>
             <div class="command-usage">jd claude-github</div>
             <ul class="args-list">
               <li>
                 <span class="arg-desc"
-                  >Runs 'claude setup-token', prompts for the OAuth token, updates 1Password vault, and loops through all GitHub repositories to update the CLAUDE_CODE_OAUTH_TOKEN secret where it exists</span
+                  >Runs 'claude setup-token', prompts for the OAuth token,
+                  updates 1Password vault, and loops through all GitHub
+                  repositories to update the CLAUDE_CODE_OAUTH_TOKEN secret
+                  where it exists</span
                 >
               </li>
               <li>
                 <span class="arg-desc"
-                  >Prerequisites: GitHub CLI (gh), 1Password CLI (op), Claude Code CLI (claude)</span
+                  >Prerequisites: GitHub CLI (gh), 1Password CLI (op), Claude
+                  Code CLI (claude)</span
                 >
               </li>
             </ul>
@@ -623,22 +682,25 @@
 
     <script>
       function copyToClipboard(text, button) {
-        navigator.clipboard.writeText(text).then(() => {
-          const originalText = button.textContent;
-          button.textContent = 'Copied!';
-          button.classList.add('copied');
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            const originalText = button.textContent
+            button.textContent = "Copied!"
+            button.classList.add("copied")
 
-          setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove('copied');
-          }, 2000);
-        }).catch(err => {
-          console.error('Failed to copy:', err);
-          button.textContent = 'Failed';
-          setTimeout(() => {
-            button.textContent = 'Copy';
-          }, 2000);
-        });
+            setTimeout(() => {
+              button.textContent = originalText
+              button.classList.remove("copied")
+            }, 2000)
+          })
+          .catch((err) => {
+            console.error("Failed to copy:", err)
+            button.textContent = "Failed"
+            setTimeout(() => {
+              button.textContent = "Copy"
+            }, 2000)
+          })
       }
     </script>
   </body>

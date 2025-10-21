@@ -6,7 +6,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 
 ## Features
 
-- **`jd init`** - Automated setup and dependency installation
+- **`jd init`** - Setup and install CLI dependencies (optional first-time setup)
 - **`jd dev`** - Apply devcontainer templates to projects with a single command
 - **`jd pr`** - Create GitHub pull requests with smart defaults
 - **`jd repo`** - Initialize GitHub repository and configure secrets from 1Password
@@ -59,20 +59,23 @@ echo "alias jd=\"$(pwd)/bin/jd\"" >> ~/.zshrc
 
 ## Usage
 
-### Initialize (Optional First Time Setup)
+### Setup CLI Dependencies (Optional First-Time Setup)
 
 ```bash
-# Full automated setup with dependency installation
+# Full automated setup with CLI dependency installation
 jd init
 ```
 
-The init command will:
+The init command helps you set up the jd CLI by:
 
-- Check for Node.js and npm
-- Offer to install GitHub CLI if missing
-- Configure GitHub authentication
-- Install devcontainer CLI if missing
-- Verify all commands are working
+- Checking for Node.js and npm
+- Offering to install GitHub CLI if missing
+- Configuring GitHub authentication
+- Installing devcontainer CLI if missing
+- Setting up shell completions for tab completion
+- Verifying all tools are working
+
+**Note:** This is an optional command that helps install CLI tools needed by jd commands.
 
 ### Apply DevContainer Template
 
