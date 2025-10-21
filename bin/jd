@@ -59,7 +59,9 @@ Usage: jd [OPTIONS] COMMAND [ARGS...]
 Commands:
     dev [template]    Apply devcontainer template to current project
     pr [options]      Create GitHub pull request with defaults
+    repo [options]    Initialize GitHub repository and configure secrets
     venv              Create or activate Python virtual environment
+    requirements      Generate requirements.txt from virtual environment
     init              Initialize jd CLI in current project
     update            Update jd CLI to latest version
     help              Show this help message

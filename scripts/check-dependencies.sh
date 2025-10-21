@@ -39,8 +39,17 @@ if command_exists gh; then
     fi
 else
     warning "⚠ GitHub CLI is not installed (optional)"
-    echo "  Required for 'jd pr' command"
+    echo "  Required for 'jd pr' and 'jd repo' commands"
     echo "  To install: https://cli.github.com/"
+fi
+
+# Check for 1Password CLI (optional)
+if command_exists op; then
+    info "✓ 1Password CLI is installed ($(op --version))"
+else
+    warning "⚠ 1Password CLI is not installed (optional)"
+    echo "  Required for 'jd repo' command"
+    echo "  To install: https://developer.1password.com/docs/cli/get-started/"
 fi
 
 # Check for Docker (optional)
@@ -73,6 +82,7 @@ else
     echo "  jd --help        Show available commands"
     echo "  jd dev           Apply devcontainer template"
     echo "  jd pr            Create GitHub pull request"
+    echo "  jd repo          Initialize GitHub repository with secrets"
 fi
 
 echo ""

@@ -1,6 +1,6 @@
 {
-  "name": "@jdboivin/jd-cli",
-  "version": "0.1.0",
+  "name": "@jdboivin/cli",
+  "version": "0.0.1",
   "description": "Personal development CLI tools",
   "bin": {
     "jd": "./bin/jd"

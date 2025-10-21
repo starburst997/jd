@@ -1,23 +1,29 @@
-# jd CLI
+# jd
 
 Personal development CLI tools for streamlined workflow with automated dependency management.
 
+This is just a collection of cli commands I find personally useful and tailored to me.
+
 ## Features
 
+- **`jd init`** - Automated setup and dependency installation
 - **`jd dev`** - Apply devcontainer templates to projects with a single command
 - **`jd pr`** - Create GitHub pull requests with smart defaults
-- **`jd init`** - Automated setup and dependency installation
+- **`jd repo`** - Initialize GitHub repository and configure secrets from 1Password
 - **`jd update`** - Self-update to latest version
+- **`jd venv`** - Create and manage Python virtual environments
+- **`jd requirements`** - Generate requirements.txt from active virtual environment
 
 ## Quick Start
 
 ### One-Line Install (Recommended)
 
 ```bash
-npx @jdboivin/jd-cli init
+npx @jdboivin/cli init
 ```
 
 This will:
+
 1. Install the jd CLI
 2. Check all system requirements
 3. Install missing dependencies (with your permission)
@@ -29,7 +35,7 @@ This will:
 #### Via npm
 
 ```bash
-npm install -g @jdboivin/jd-cli
+npm install -g @jdboivin/cli
 jd init  # Run automated setup
 ```
 
@@ -37,19 +43,19 @@ jd init  # Run automated setup
 
 ```bash
 brew tap jdboivin/tap
-brew install jd-cli
+brew install cli
 ```
 
 #### Via curl (Coming Soon)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jdboivin/jd-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/starburst997/jd-cli/main/install.sh | bash
 ```
 
 #### From Source
 
 ```bash
-git clone https://github.com/jdboivin/jd-cli.git
+git clone https://github.com/starburst997/jd-cli.git
 cd jd-cli
 npm install
 ./scripts/setup-local.sh
@@ -68,6 +74,7 @@ jd init --skip-deps
 ```
 
 The init command will:
+
 - Check for Node.js and npm
 - Offer to install GitHub CLI if missing
 - Configure GitHub authentication
@@ -113,12 +120,62 @@ jd pr --title "Add new feature" --draft --reviewers teammate --labels enhancemen
 ```
 
 Smart PR features:
+
 - Auto-generates title from branch name or recent commits
 - Creates PR body from commit history
 - Detects WIP/Draft branches
 - Uses repository PR templates if available
 - Auto-assigns yourself
 - Offers to push changes if needed
+
+### Initialize GitHub Repository with Secrets
+
+```bash
+# Initialize private repository with bot secrets
+jd repo
+
+# Initialize with NPM token as well
+jd repo --npm
+
+# Initialize with extension publishing tokens
+jd repo --extensions
+
+# Initialize with all secrets
+jd repo --npm --extensions
+
+# Create public repository
+jd repo --public
+
+# Create with description
+jd repo --description "My awesome project"
+
+# Use existing git repo (skip git init)
+jd repo --no-init
+```
+
+The repo command integrates with 1Password CLI to securely add GitHub secrets:
+
+**Always added:**
+
+- `BOT_ID` - GitHub App bot ID
+- `BOT_KEY` - GitHub App bot private key
+
+**With `--npm` flag:**
+
+- `NPM_TOKEN` - NPM publishing token
+
+**With `--extensions` flag:**
+
+- `VSCE_PAT` - Visual Studio Code Extension publishing token
+- `OVSX_PAT` - Open VSX Registry publishing token
+
+Secret references in 1Password:
+
+- BOT_ID: `op://dev/github-app/BOT_ID`
+- BOT_KEY: `op://dev/github-app/BOT_KEY`
+- NPM_TOKEN: `op://dev/npm/NPM_TOKEN`
+- VSCE_PAT: `op://dev/extensions/VSCE_PAT`
+- OVSX_PAT: `op://dev/extensions/OVSX_PAT`
 
 ### Update jd CLI
 
@@ -133,11 +190,47 @@ jd update --check
 jd update --force
 ```
 
+### Manage Python Virtual Environments
+
+```bash
+# Create new virtual environment or activate existing one
+jd venv
+
+# The command will:
+# - Create a new venv if it doesn't exist
+# - Activate the virtual environment
+# - Automatically install requirements.txt if present
+```
+
+The venv command automatically handles:
+
+- Detection of python3 or python
+- Creation of virtual environment in ./venv
+- Auto-installation of requirements.txt dependencies
+- Smart activation messages
+
+### Generate Python Requirements
+
+```bash
+# Generate requirements.txt from active virtual environment
+jd requirements
+
+# This uses pip freeze to capture all installed packages
+```
+
+Requirements workflow:
+
+1. Create/activate venv: `jd venv`
+2. Install packages: `pip install package1 package2`
+3. Generate requirements: `jd requirements`
+4. Commit requirements.txt to your repository
+
 ## Automated Dependency Management
 
 The jd CLI automatically handles dependency installation:
 
 ### Required Dependencies
+
 - Git
 - Node.js >= 14.0.0
 - npm >= 6.0.0
@@ -145,19 +238,28 @@ The jd CLI automatically handles dependency installation:
 ### Optional Dependencies (Auto-Installed)
 
 When you run a command that needs a dependency, jd CLI will:
+
 1. Detect if it's missing
 2. Offer to install it automatically
 3. Configure it if needed (e.g., GitHub authentication)
 
-**GitHub CLI (`gh`)** - For `jd pr` command
+**GitHub CLI (`gh`)** - For `jd pr` and `jd repo` commands
+
 - Auto-installs via brew (macOS), apt/yum (Linux), or winget (Windows)
 - Guides through GitHub authentication
 
+**1Password CLI (`op`)** - For `jd repo` command
+
+- Required for managing GitHub secrets from 1Password
+- Install: https://developer.1password.com/docs/cli/get-started/
+
 **DevContainer CLI** - For `jd dev` command
+
 - Auto-installs via npm
 - Falls back to local installation if global fails
 
 **Docker** - For dev containers (optional)
+
 - Provides installation instructions
 
 ## Development
@@ -165,17 +267,20 @@ When you run a command that needs a dependency, jd CLI will:
 ### Local Setup
 
 1. Clone the repository:
+
    ```bash
-   git clone https://github.com/jdboivin/jd-cli.git
+   git clone https://github.com/starburst997/jd-cli.git
    cd jd-cli
    ```
 
 2. Run the setup script:
+
    ```bash
    ./scripts/setup-local.sh
    ```
 
    This will:
+
    - Install npm dependencies
    - Make scripts executable
    - Create a symlink for global usage (optional)
@@ -194,8 +299,11 @@ jd-cli/
 ├── commands/
 │   ├── dev.sh               # DevContainer command
 │   ├── pr.sh                # GitHub PR command
+│   ├── repo.sh              # GitHub repository initialization command
 │   ├── init.sh              # Setup command
-│   └── update.sh            # Self-update command
+│   ├── update.sh            # Self-update command
+│   ├── venv.sh              # Python virtual environment command
+│   └── requirements.sh      # Python requirements generator
 ├── utils/
 │   ├── common.sh            # Common utilities
 │   └── dependency-check.sh # Dependency management
@@ -208,12 +316,14 @@ jd-cli/
 ### Adding New Commands
 
 1. Create a new script in `commands/`:
+
    ```bash
    touch commands/mycommand.sh
    chmod +x commands/mycommand.sh
    ```
 
 2. Implement the command with required functions:
+
    ```bash
    #!/usr/bin/env bash
 
@@ -260,11 +370,13 @@ The CLI follows these conventions:
 The CLI is distributed via multiple channels for maximum accessibility:
 
 1. **npm** - Primary distribution method
+
    - Handles Node.js dependencies automatically
    - Supports version management
    - Easy updates via `jd update`
 
 2. **Homebrew** - macOS/Linux users (planned)
+
    - Familiar to many developers
    - Handles system dependencies
 
@@ -290,19 +402,21 @@ The CLI is distributed via multiple channels for maximum accessibility:
 ### Permission Errors
 
 If you get permission errors during global npm install:
+
 ```bash
 # Option 1: Use npx (recommended)
-npx @jdboivin/jd-cli init
+npx @jdboivin/cli init
 
 # Option 2: Fix npm permissions
 npm config set prefix ~/.npm-global
 export PATH=~/.npm-global/bin:$PATH
-npm install -g @jdboivin/jd-cli
+npm install -g @jdboivin/cli
 ```
 
 ### GitHub Authentication Issues
 
 If GitHub CLI authentication fails:
+
 ```bash
 # Manually authenticate
 gh auth login
@@ -314,6 +428,7 @@ gh auth status
 ### DevContainer CLI Not Found
 
 If devcontainer command isn't found after installation:
+
 ```bash
 # Install globally
 npm install -g @devcontainers/cli
@@ -342,4 +457,4 @@ JD Boivin
 
 ## Support
 
-For issues and feature requests, please use the [GitHub Issues](https://github.com/jdboivin/jd-cli/issues) page.
+For issues and feature requests, please use the [GitHub Issues](https://github.com/starburst997/jd-cli/issues) page.
