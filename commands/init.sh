@@ -9,26 +9,121 @@ Initialize jd CLI and install all dependencies
 Usage: jd init [OPTIONS]
 
 Options:
-    --skip-deps       Skip dependency installation
-    --force           Force reinstall all dependencies
-    -h, --help        Show this help message
+    --skip-deps          Skip dependency installation
+    --skip-completions   Skip shell completion setup
+    --force              Force reinstall all dependencies
+    -h, --help           Show this help message
 
 This command will:
     1. Check system requirements
     2. Install missing dependencies (GitHub CLI, devcontainer CLI)
     3. Configure GitHub authentication
-    4. Verify everything is working
+    4. Setup shell completions for your current shell
+    5. Verify everything is working
 
 Examples:
-    jd init                  # Full setup with prompts
-    jd init --skip-deps      # Skip dependency checks
-    jd init --force          # Reinstall everything
+    jd init                       # Full setup with prompts
+    jd init --skip-deps           # Skip dependency checks
+    jd init --skip-completions    # Skip shell completion setup
+    jd init --force               # Reinstall everything
 
 EOF
 }
 
+# Setup shell completion for the current shell
+setup_shell_completion() {
+    local shell_name=""
+    local rc_file=""
+    local completion_line=""
+
+    # Detect user's shell (not the script's shell)
+    # Since this script runs in bash (shebang), we need to check $SHELL env var first
+    # to detect the user's actual shell, not the script interpreter
+    case "$SHELL" in
+        */bash)
+            shell_name="bash"
+            # Check common bash rc files
+            if [ -f "$HOME/.bashrc" ]; then
+                rc_file="$HOME/.bashrc"
+            elif [ -f "$HOME/.bash_profile" ]; then
+                rc_file="$HOME/.bash_profile"
+            else
+                rc_file="$HOME/.bashrc"
+            fi
+            completion_line='eval "$(jd completion bash)"'
+            ;;
+        */zsh)
+            shell_name="zsh"
+            rc_file="$HOME/.zshrc"
+            completion_line='eval "$(jd completion zsh)"'
+            ;;
+        *)
+            # Fallback: try to detect from version variables (if run directly in a shell)
+            if [ -n "$ZSH_VERSION" ]; then
+                shell_name="zsh"
+                rc_file="$HOME/.zshrc"
+                completion_line='eval "$(jd completion zsh)"'
+            elif [ -n "$BASH_VERSION" ]; then
+                shell_name="bash"
+                if [ -f "$HOME/.bashrc" ]; then
+                    rc_file="$HOME/.bashrc"
+                elif [ -f "$HOME/.bash_profile" ]; then
+                    rc_file="$HOME/.bash_profile"
+                else
+                    rc_file="$HOME/.bashrc"
+                fi
+                completion_line='eval "$(jd completion bash)"'
+            else
+                warning "Could not detect shell type from SHELL=$SHELL"
+                return 1
+            fi
+            ;;
+    esac
+
+    info "Setting up $shell_name completion..."
+
+    # Check if completion is already configured
+    if [ -f "$rc_file" ] && grep -qF "jd completion $shell_name" "$rc_file"; then
+        success "Shell completion already configured in $rc_file"
+        return 0
+    fi
+
+    # Ask user for permission
+    echo "  This will add the following line to $rc_file:"
+    echo "  $completion_line"
+    echo ""
+
+    if confirm "Add shell completion to $rc_file?" "y"; then
+        # Backup rc file
+        cp "$rc_file" "${rc_file}.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
+
+        # Add completion line
+        echo "" >> "$rc_file"
+        echo "# jd CLI completion" >> "$rc_file"
+        echo "$completion_line" >> "$rc_file"
+
+        success "Shell completion added to $rc_file"
+
+        # Provide instructions to activate in current shell
+        # We can't source the file directly because this script runs in a subprocess
+        echo ""
+        info "To activate completions in your current shell, run:"
+        echo "  source $rc_file"
+        echo ""
+        echo "Or simply start a new shell session."
+
+        return 0
+    else
+        info "Skipping shell completion setup"
+        echo "  You can set it up manually later with:"
+        echo "  echo '$completion_line' >> $rc_file"
+        return 0
+    fi
+}
+
 execute_command() {
     local skip_deps=false
+    local skip_completions=false
     local force=false
 
     # Parse options
@@ -36,6 +131,10 @@ execute_command() {
         case $1 in
             --skip-deps)
                 skip_deps=true
+                shift
+                ;;
+            --skip-completions)
+                skip_completions=true
                 shift
                 ;;
             --force)
@@ -93,12 +192,19 @@ execute_command() {
         fi
     fi
 
+    # Setup shell completions
+    if [ "$skip_completions" != true ]; then
+        echo ""
+        setup_shell_completion || warning "Shell completion setup failed (continuing anyway)"
+    fi
+
     echo ""
     log "jd CLI initialization complete!"
     echo ""
     echo "Available commands:"
     echo "  jd dev [template]    - Apply devcontainer template"
     echo "  jd pr [options]      - Create GitHub pull request"
+    echo "  jd completion        - Setup shell completions"
     echo "  jd update            - Update jd CLI to latest version"
     echo "  jd --help            - Show all commands"
     echo ""

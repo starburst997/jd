@@ -1,0 +1,105 @@
+#compdef jd
+
+# Zsh completion script for jd CLI
+# This script provides tab completion for all jd commands and their options
+
+_jd() {
+    local -a commands
+    local -a global_opts
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    # Define available commands with descriptions
+    commands=(
+        'dev:Apply devcontainer template to current project'
+        'pr:Create GitHub pull request with defaults'
+        'repo:Initialize GitHub repository and configure secrets'
+        'npm:Setup npm package with OIDC trusted publishing'
+        'venv:Create or activate Python virtual environment'
+        'requirements:Generate requirements.txt from virtual environment'
+        'claude-github:Update Claude Code OAuth token across GitHub repos and 1Password'
+        'init:Initialize jd CLI in current project'
+        'update:Update jd CLI to latest version'
+        'completion:Generate shell completion scripts'
+        'help:Show help message'
+    )
+
+    # Parse arguments
+    _arguments -C \
+        '(-v --verbose)'{-v,--verbose}'[Enable verbose output]' \
+        '(-h --help)'{-h,--help}'[Show help message]' \
+        '--version[Show version]' \
+        '1: :->command' \
+        '*::arg:->args'
+
+    case $state in
+        command)
+            _describe 'command' commands
+            ;;
+        args)
+            case $words[1] in
+                pr)
+                    _arguments \
+                        '--title[PR title]:title:' \
+                        '--body[PR body]:body:' \
+                        '--base[Base branch]:branch:' \
+                        '--head[Head branch]:branch:' \
+                        '--draft[Create as draft PR]' \
+                        '--web[Open PR in web browser]' \
+                        '--reviewers[Comma-separated list of reviewers]:reviewers:' \
+                        '--assignees[Comma-separated list of assignees]:assignees:' \
+                        '--labels[Comma-separated list of labels]:labels:' \
+                        '--milestone[Milestone ID or title]:milestone:' \
+                        '--no-maintainer[Disable maintainer edits]' \
+                        '--template[Use PR template file]:file:_files' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                dev)
+                    _arguments \
+                        '--list[List available templates]' \
+                        '--force[Force overwrite existing files]' \
+                        '(-h --help)'{-h,--help}'[Show help message]' \
+                        '1:template:'
+                    ;;
+                repo)
+                    _arguments \
+                        '--name[Repository name]:name:' \
+                        '--description[Repository description]:description:' \
+                        '--private[Create private repository]' \
+                        '--public[Create public repository]' \
+                        '--org[Organization name]:organization:' \
+                        '--no-secrets[Skip secrets configuration]' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                npm)
+                    _arguments \
+                        '--scope[Package scope]:scope:' \
+                        '--access[Package access (public/restricted)]:access:(public restricted)' \
+                        '--repo-url[Repository URL]:url:' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                update)
+                    _arguments \
+                        '--check[Check for updates without installing]' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                completion)
+                    _arguments \
+                        '1:shell:(bash zsh)' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                venv|requirements|claude-github|init|help)
+                    _arguments \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+# Register the completion function
+# The #compdef directive at the top tells compinit to register this function
+# When eval'd directly, we need to call compdef if it's available (after compinit)
+if [[ -n ${ZSH_VERSION-} ]] && (( ${+functions[compdef]} )); then
+    compdef _jd jd
+fi

@@ -84,6 +84,25 @@ jd <command> [args]
 
 4. Command automatically available as `jd mycommand`
 
+**CRITICAL: When adding a new command, you MUST update documentation in ALL of these files:**
+
+1. **`bin/jd`** - Add command to the `show_help()` function and examples section
+2. **`README.md`** - Add to:
+   - Features list at the top
+   - Usage section with detailed examples and workflow
+   - Dependency management section (if applicable)
+   - Project structure section (`commands/` directory listing)
+3. **`docs/index.html`** - Add a new command card to the commands section
+4. **`utils/dependency-check.sh`** - Add dependency checking case to `check_command_dependencies()` if the command has prerequisites
+5. **`completions/jd.bash`** - Add command to:
+   - The `commands` variable list
+   - Command-specific options in the case statement (if the command has flags beyond `--help`)
+6. **`completions/jd.zsh`** - Add command to:
+   - The `commands` array with description
+   - Command-specific arguments in the case statement (if the command has flags beyond `--help`)
+
+**Failing to update all documentation and completion files will result in an incomplete implementation.**
+
 ### Publishing New Versions
 
 Done via github action
@@ -151,6 +170,50 @@ Done via github action
 - Self-updates via `npm install -g @jdboivin/cli@latest`
 - Can check for updates without installing: `jd update --check`
 
+### Claude-GitHub Command (`commands/claude-github.sh`)
+
+- Runs `claude setup-token` to generate OAuth token
+- Prompts user to manually paste the token (since `claude setup-token` expects manual copy)
+- Updates 1Password secret at `op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN`
+- Fetches all user's GitHub repositories via `gh repo list`
+- Loops through repos and updates `CLAUDE_CODE_OAUTH_TOKEN` secret if it exists
+- Provides summary statistics (updated/skipped/failed counts)
+- Dependencies: `gh`, `op`, `claude` (all checked via `check_command_dependencies`)
+
+### Completion Command (`commands/completion.sh`)
+
+- Outputs shell completion scripts for bash or zsh
+- Usage: `jd completion bash` or `jd completion zsh`
+- Users load completions with: `eval "$(jd completion bash)"`
+- Completion scripts located in `completions/` directory
+- Auto-installed during `jd init` (can skip with `--skip-completions`)
+
+### Shell Completions (`completions/`)
+
+The CLI provides tab completion for bash and zsh shells:
+
+- **`jd.bash`** - Bash completion script using `complete -F`
+- **`jd.zsh`** - Zsh completion script using `#compdef` and `_arguments`
+
+Both scripts provide:
+- Command name completion
+- Global option completion (`-v`, `--verbose`, `--help`, `--version`)
+- Command-specific option completion (e.g., `jd pr --draft`, `jd dev --force`)
+- Context-aware suggestions based on current command
+
+Setup methods:
+1. **Automatic**: `jd init` detects shell and adds completion to RC file
+2. **Manual**: `eval "$(jd completion bash)"` in shell session
+3. **Persistent Manual**: Add eval line to `~/.bashrc` or `~/.zshrc`
+
+The init command's `setup_shell_completion()` function:
+- Auto-detects user's shell via `$SHELL` environment variable (not script interpreter)
+- Supports bash and zsh shells
+- Checks if completion already configured (prevents duplicates)
+- Creates timestamped backup of RC file before modification
+- Adds completion line with comment marker for easy identification
+- Handles edge cases where `$SHELL` is not standard (falls back to version variables)
+
 ## Common Tasks
 
 ```bash
@@ -167,4 +230,12 @@ JD_AUTO_INSTALL=false jd pr
 
 # Test with verbose output
 jd --verbose pr --draft
+
+# Test shell completions
+jd completion bash | head -20      # Verify bash completion output
+jd completion zsh | head -20       # Verify zsh completion output
+bash -n completions/jd.bash        # Validate bash syntax
+zsh -n completions/jd.zsh          # Validate zsh syntax
+eval "$(jd completion bash)"       # Load completions in current bash session
+eval "$(jd completion zsh)"        # Load completions in current zsh session
 ```
