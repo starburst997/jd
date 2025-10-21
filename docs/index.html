@@ -140,6 +140,40 @@
         font-size: 1.1rem;
         color: #98d280;
         text-align: center;
+        position: relative;
+      }
+
+      .code-wrapper {
+        position: relative;
+        max-width: 600px;
+        margin: 1.5rem auto;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        background: #3f3f3f;
+        border: 1px solid #636669;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        color: #d0d0d9;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+
+      .copy-btn:hover {
+        background: #61afff;
+        border-color: #61afff;
+        color: #0c1018;
+      }
+
+      .copy-btn.copied {
+        background: #98d280;
+        border-color: #98d280;
+        color: #0c1018;
       }
 
       .commands-section {
@@ -326,13 +360,19 @@
         <p class="section-subtitle">Choose your preferred installation method</p>
         <div style="max-width: 800px; margin: 2rem auto;">
           <h3 style="color: #ffe169; font-size: 1.3rem; margin-bottom: 1rem; text-align: center;">Via curl (no dependencies)</h3>
-          <div class="code-block">curl -fsSL https://cli.jd.boiv.in/install.sh | bash</div>
+          <div class="code-wrapper">
+            <div class="code-block">curl -fsSL https://cli.jd.boiv.in/install.sh | bash</div>
+            <button class="copy-btn" onclick="copyToClipboard('curl -fsSL https://cli.jd.boiv.in/install.sh | bash', this)">Copy</button>
+          </div>
           <p style="text-align: center; color: #96969d; margin-top: 0.5rem;">Requires only curl/wget and unzip</p>
 
           <div style="margin: 2rem 0; text-align: center; color: #3f3f3f;">or</div>
 
           <h3 style="color: #ffe169; font-size: 1.3rem; margin-bottom: 1rem; text-align: center;">Via npm</h3>
-          <div class="code-block">npm install -g @jdboivin/cli</div>
+          <div class="code-wrapper">
+            <div class="code-block">npm install -g @jdboivin/cli</div>
+            <button class="copy-btn" onclick="copyToClipboard('npm install -g @jdboivin/cli', this)">Copy</button>
+          </div>
           <p style="text-align: center; color: #96969d; margin-top: 0.5rem;">Requires Node.js and npm</p>
         </div>
       </div>
@@ -541,5 +581,26 @@
         <p style="margin-top: 1rem; color: #636669">Made by JD Boivin</p>
       </div>
     </footer>
+
+    <script>
+      function copyToClipboard(text, button) {
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = button.textContent;
+          button.textContent = 'Copied!';
+          button.classList.add('copied');
+
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('copied');
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+          button.textContent = 'Failed';
+          setTimeout(() => {
+            button.textContent = 'Copy';
+          }, 2000);
+        });
+      }
+    </script>
   </body>
 </html>
