@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jd CLI - Personal Development Toolkit</title>
+    <meta
+      name="description"
+      content="A bash-based personal development CLI for streamlined workflows with automated dependency management."
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #d0d0d9;
+        background: #0c1018;
+        min-height: 100vh;
+      }
+
+      .hero-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, #0c1018 0%, #191923 100%);
+        z-index: -1;
+      }
+
+      .hero-accent {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #61afff20 0%, transparent 70%);
+        top: -300px;
+        left: 50%;
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      header {
+        padding: 2rem 0;
+        text-align: center;
+      }
+
+      .hero {
+        padding: 4rem 0 6rem;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(to right, #61afff, #98d280);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .tagline {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: #96969d;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 0.875rem 2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+      }
+
+      .btn-primary {
+        background: #61afff;
+        color: #0c1018;
+        border: 1px solid #61afff;
+      }
+
+      .btn-primary:hover {
+        background: #98d280;
+        border-color: #98d280;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 30px rgba(97, 175, 255, 0.3);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: #d0d0d9;
+        border: 2px solid #3f3f3f;
+      }
+
+      .btn-secondary:hover {
+        background: #32373c;
+        border-color: #636669;
+      }
+
+      .install-section {
+        background: #141518;
+        border-top: 1px solid #3f3f3f;
+        border-bottom: 1px solid #3f3f3f;
+        padding: 3rem 0;
+      }
+
+      .code-block {
+        background: #0c1018;
+        border: 1px solid #3f3f3f;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+        max-width: 600px;
+        font-family: "Monaco", monospace;
+        font-size: 1.1rem;
+        color: #98d280;
+        text-align: center;
+      }
+
+      .commands-section {
+        padding: 4rem 0;
+        background: #0c1018;
+      }
+
+      .command-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .command-card {
+        background: #141518;
+        border: 1px solid #3f3f3f;
+        border-radius: 12px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+      }
+
+      .command-card:hover {
+        border-color: #61afff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 30px rgba(97, 175, 255, 0.2);
+      }
+
+      .command-name {
+        font-size: 1.8rem;
+        color: #ffe169;
+        margin-bottom: 1rem;
+        font-family: "Monaco", monospace;
+      }
+
+      .command-desc {
+        color: #96969d;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+      }
+
+      .command-usage {
+        background: #0c1018;
+        border: 1px solid #3f3f3f;
+        border-radius: 6px;
+        padding: 1rem;
+        font-family: "Monaco", monospace;
+        font-size: 0.95rem;
+        color: #98d280;
+        margin-bottom: 1rem;
+      }
+
+      .args-list {
+        list-style: none;
+        margin-top: 1rem;
+      }
+
+      .args-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #3f3f3f;
+        font-size: 0.95rem;
+      }
+
+      .args-list li:last-child {
+        border-bottom: none;
+      }
+
+      .arg-name {
+        color: #e18cf5;
+        font-family: "Monaco", monospace;
+        font-weight: 600;
+      }
+
+      .arg-desc {
+        color: #96969d;
+        margin-left: 1rem;
+        display: block;
+        margin-top: 0.25rem;
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        color: #d0d0d9;
+        margin-bottom: 1rem;
+      }
+
+      .section-subtitle {
+        text-align: center;
+        color: #96969d;
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      footer {
+        background: #0c1018;
+        padding: 3rem 0;
+        text-align: center;
+        color: #96969d;
+        border-top: 1px solid #3f3f3f;
+      }
+
+      footer a {
+        color: #61afff;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      footer a:hover {
+        color: #98d280;
+        text-decoration: underline;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2.5rem;
+        }
+
+        .tagline {
+          font-size: 1.2rem;
+        }
+
+        .cta-buttons {
+          flex-direction: column;
+        }
+
+        .command-name {
+          font-size: 1.4rem;
+        }
+
+        .code-block {
+          font-size: 0.9rem;
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero-background">
+      <div class="hero-accent"></div>
+    </div>
+
+    <header>
+      <div class="container">
+        <nav>
+          <a
+            href="https://github.com/starburst997/jd-cli"
+            class="btn btn-secondary"
+          >
+            View on GitHub →
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="container">
+        <h1>jd CLI</h1>
+        <p class="tagline">
+          Personal development toolkit for streamlined workflows with automated
+          dependency management
+        </p>
+        <div class="cta-buttons">
+          <a
+            href="https://www.npmjs.com/package/@jdboivin/cli"
+            class="btn btn-primary"
+          >
+            Install from npm
+          </a>
+          <a
+            href="https://github.com/starburst997/jd-cli"
+            class="btn btn-secondary"
+          >
+            Documentation
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="install-section">
+      <div class="container">
+        <h2 class="section-title">Quick Start</h2>
+        <p class="section-subtitle">Get started in seconds with npx</p>
+        <div class="code-block">npx @jdboivin/cli init</div>
+      </div>
+    </section>
+
+    <section class="commands-section">
+      <div class="container">
+        <h2 class="section-title">Commands</h2>
+        <p class="section-subtitle">
+          All available commands and their options
+        </p>
+
+        <div class="command-grid">
+          <!-- init -->
+          <div class="command-card">
+            <div class="command-name">jd init</div>
+            <div class="command-desc">
+              Automated setup and dependency installation
+            </div>
+            <div class="command-usage">jd init [--skip-deps]</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">--skip-deps</span>
+                <span class="arg-desc">Skip dependency checks</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- dev -->
+          <div class="command-card">
+            <div class="command-name">jd dev</div>
+            <div class="command-desc">
+              Apply devcontainer templates to projects
+            </div>
+            <div class="command-usage">
+              jd dev [template-id] [--force] [--list]
+            </div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">template-id</span>
+                <span class="arg-desc"
+                  >Custom template ID (default:
+                  ghcr.io/devcontainers/templates/nodejs-postgres)</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--force</span>
+                <span class="arg-desc"
+                  >Force overwrite existing .devcontainer</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--list</span>
+                <span class="arg-desc">List available templates</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- pr -->
+          <div class="command-card">
+            <div class="command-name">jd pr</div>
+            <div class="command-desc">
+              Create GitHub pull requests with smart defaults
+            </div>
+            <div class="command-usage">
+              jd pr [--draft] [--base BRANCH] [--web] [--title TITLE]
+              [--reviewers USERS] [--labels LABELS]
+            </div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">--draft</span>
+                <span class="arg-desc">Create as draft PR</span>
+              </li>
+              <li>
+                <span class="arg-name">--base BRANCH</span>
+                <span class="arg-desc"
+                  >Target base branch (default: main/master)</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--web</span>
+                <span class="arg-desc">Open PR in browser after creation</span>
+              </li>
+              <li>
+                <span class="arg-name">--title TITLE</span>
+                <span class="arg-desc">Custom PR title</span>
+              </li>
+              <li>
+                <span class="arg-name">--reviewers USERS</span>
+                <span class="arg-desc"
+                  >Comma-separated list of reviewers</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--labels LABELS</span>
+                <span class="arg-desc">Comma-separated list of labels</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- repo -->
+          <div class="command-card">
+            <div class="command-name">jd repo</div>
+            <div class="command-desc">
+              Initialize GitHub repository and configure secrets from 1Password
+            </div>
+            <div class="command-usage">
+              jd repo [--npm] [--extensions] [--claude] [--public]
+              [--description DESC] [--no-init]
+            </div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">--npm</span>
+                <span class="arg-desc">Add NPM_TOKEN secret</span>
+              </li>
+              <li>
+                <span class="arg-name">--extensions</span>
+                <span class="arg-desc"
+                  >Add VSCE_PAT and OVSX_PAT secrets for extension
+                  publishing</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--claude</span>
+                <span class="arg-desc"
+                  >Add CLAUDE_CODE_OAUTH_TOKEN secret</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--public</span>
+                <span class="arg-desc"
+                  >Create public repository (default: private)</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--description DESC</span>
+                <span class="arg-desc">Repository description</span>
+              </li>
+              <li>
+                <span class="arg-name">--no-init</span>
+                <span class="arg-desc"
+                  >Use existing git repo (skip git init)</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- update -->
+          <div class="command-card">
+            <div class="command-name">jd update</div>
+            <div class="command-desc">Self-update to latest version</div>
+            <div class="command-usage">jd update [--check] [--force]</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">--check</span>
+                <span class="arg-desc"
+                  >Check for updates without installing</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--force</span>
+                <span class="arg-desc">Force reinstall current version</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- venv -->
+          <div class="command-card">
+            <div class="command-name">jd venv</div>
+            <div class="command-desc">
+              Create and manage Python virtual environments
+            </div>
+            <div class="command-usage">jd venv</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-desc"
+                  >Creates ./venv if missing, activates it, and auto-installs
+                  from requirements.txt</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- requirements -->
+          <div class="command-card">
+            <div class="command-name">jd requirements</div>
+            <div class="command-desc">
+              Generate requirements.txt from active virtual environment
+            </div>
+            <div class="command-usage">jd requirements</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-desc"
+                  >Uses pip freeze to capture all installed packages</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>
+          <a href="https://github.com/starburst997/jd-cli">GitHub</a> •
+          <a href="https://github.com/starburst997/jd-cli/issues">Issues</a> •
+          <a href="https://github.com/starburst997/jd-cli/releases">Releases</a
+          > •
+          <a href="https://www.npmjs.com/package/@jdboivin/cli">npm Package</a>
+        </p>
+        <p style="margin-top: 1rem; color: #636669">Made by JD Boivin</p>
+      </div>
+    </footer>
+  </body>
+</html>
