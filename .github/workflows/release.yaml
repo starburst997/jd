@@ -35,7 +35,7 @@ jobs:
       - name: Publish NPM
         uses: starburst997/npm-publish@v1
         with:
-          token: ${{ secrets.NPM_TOKEN }}
+          #token: ${{ secrets.NPM_TOKEN }}
           version: ${{ steps.version.outputs.version }}
 
       - name: Generate changelog and create release
