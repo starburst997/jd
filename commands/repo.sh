@@ -114,9 +114,9 @@ execute_command() {
     if [ "$skip_init" = false ]; then
         if git rev-parse --git-dir > /dev/null 2>&1; then
             warning "Already in a git repository"
-            if ! confirm "Continue with existing repository?" "y"; then
-                return 1
-            fi
+            #if ! confirm "Continue with existing repository?" "y"; then
+            #    return 1
+            #fi
         else
             # Initialize git repository
             info "Initializing git repository..."
