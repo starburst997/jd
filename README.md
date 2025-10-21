@@ -140,8 +140,11 @@ jd repo --npm
 # Initialize with extension publishing tokens
 jd repo --extensions
 
+# Initialize with Claude Code OAuth token
+jd repo --claude
+
 # Initialize with all secrets
-jd repo --npm --extensions
+jd repo --npm --extensions --claude
 
 # Create public repository
 jd repo --public
@@ -169,6 +172,10 @@ The repo command integrates with 1Password CLI to securely add GitHub secrets:
 - `VSCE_PAT` - Visual Studio Code Extension publishing token
 - `OVSX_PAT` - Open VSX Registry publishing token
 
+**With `--claude` flag:**
+
+- `CLAUDE_CODE_OAUTH_TOKEN` - Claude Code OAuth token
+
 Secret references in 1Password:
 
 - BOT_ID: `op://dev/github-app/BOT_ID`
@@ -176,6 +183,7 @@ Secret references in 1Password:
 - NPM_TOKEN: `op://dev/npm/NPM_TOKEN`
 - VSCE_PAT: `op://dev/extensions/VSCE_PAT`
 - OVSX_PAT: `op://dev/extensions/OVSX_PAT`
+- CLAUDE_CODE_OAUTH_TOKEN: `op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN`
 
 ### Update jd CLI
 

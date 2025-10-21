@@ -19,6 +19,7 @@ Description:
 Options:
     --npm                 Also add NPM_TOKEN secret
     --extensions          Also add VSCE_PAT and OVSX_PAT secrets
+    --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret
     --public              Create public repository (default: private)
     --description DESC    Repository description
     --no-init             Skip git initialization (use existing repo)
@@ -28,15 +29,17 @@ Examples:
     jd repo                              # Initialize private repo with bot secrets
     jd repo --npm                        # Add NPM_TOKEN as well
     jd repo --extensions                 # Add VSCE_PAT and OVSX_PAT as well
-    jd repo --npm --extensions           # Add all secrets
+    jd repo --claude                     # Add CLAUDE_CODE_OAUTH_TOKEN as well
+    jd repo --npm --extensions --claude  # Add all secrets
     jd repo --public --description "My awesome project"
 
 Secret References:
-    BOT_ID:     op://dev/github-app/BOT_ID
-    BOT_KEY:    op://dev/github-app/BOT_KEY
-    NPM_TOKEN:  op://dev/npm/NPM_TOKEN
-    VSCE_PAT:   op://dev/extensions/VSCE_PAT
-    OVSX_PAT:   op://dev/extensions/OVSX_PAT
+    BOT_ID:                   op://dev/github-app/BOT_ID
+    BOT_KEY:                  op://dev/github-app/BOT_KEY
+    NPM_TOKEN:                op://dev/npm/NPM_TOKEN
+    VSCE_PAT:                 op://dev/extensions/VSCE_PAT
+    OVSX_PAT:                 op://dev/extensions/OVSX_PAT
+    CLAUDE_CODE_OAUTH_TOKEN:  op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN
 
 EOF
 }
@@ -71,6 +74,7 @@ execute_command() {
     # Default values
     local add_npm=false
     local add_extensions=false
+    local add_claude=false
     local visibility="private"
     local description=""
     local skip_init=false
@@ -84,6 +88,10 @@ execute_command() {
                 ;;
             --extensions)
                 add_extensions=true
+                shift
+                ;;
+            --claude)
+                add_claude=true
                 shift
                 ;;
             --public)
@@ -165,6 +173,11 @@ execute_command() {
     if [ "$add_extensions" = true ]; then
         add_secret "VSCE_PAT" "op://dev/extensions/VSCE_PAT" || return 1
         add_secret "OVSX_PAT" "op://dev/extensions/OVSX_PAT" || return 1
+    fi
+
+    # Add Claude Code OAuth token if requested
+    if [ "$add_claude" = true ]; then
+        add_secret "CLAUDE_CODE_OAUTH_TOKEN" "op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN" || return 1
     fi
 
     log "Repository initialization complete!"
