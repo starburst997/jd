@@ -22,14 +22,13 @@ This is just a collection of cli commands I find personally useful and tailored 
 
 ```bash
 npm install -g @jdboivin/cli
-jd init  # Run automated setup
 ```
 
 #### Via Homebrew (Coming Soon)
 
 ```bash
 brew tap jdboivin/tap
-brew install cli
+brew install jd
 ```
 
 #### Via curl
@@ -44,19 +43,19 @@ curl -fsSL https://cli.jd.boiv.in/install.sh | bash
 git clone https://github.com/starburst997/jd.git
 cd jd
 npm install
+# Add alias to your rc files
+echo "alias jd=\"$(pwd)/bin/jd\"" >> ~/.zshrc
+# or
 ./scripts/setup-local.sh
 ```
 
 ## Usage
 
-### Initialize (First Time Setup)
+### Initialize (Optional First Time Setup)
 
 ```bash
 # Full automated setup with dependency installation
 jd init
-
-# Skip dependency checks (manual setup)
-jd init --skip-deps
 ```
 
 The init command will:
