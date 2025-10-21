@@ -36,7 +36,7 @@ jobs:
         uses: starburst997/npm-publish@v1
         with:
           version: ${{ steps.version.outputs.version }}
-          #token: ${{ secrets.NPM_TOKEN }}
+          provenance: true
 
       - name: Generate changelog and create release
         uses: starburst997/commits-logs@v1
