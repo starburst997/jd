@@ -583,6 +583,27 @@
               </li>
             </ul>
           </div>
+
+          <!-- claude-github -->
+          <div class="command-card">
+            <div class="command-name">jd claude-github</div>
+            <div class="command-desc">
+              Update Claude Code OAuth token across all GitHub repositories and 1Password
+            </div>
+            <div class="command-usage">jd claude-github</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-desc"
+                  >Runs 'claude setup-token', prompts for the OAuth token, updates 1Password vault, and loops through all GitHub repositories to update the CLAUDE_CODE_OAUTH_TOKEN secret where it exists</span
+                >
+              </li>
+              <li>
+                <span class="arg-desc"
+                  >Prerequisites: GitHub CLI (gh), 1Password CLI (op), Claude Code CLI (claude)</span
+                >
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>

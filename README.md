@@ -14,6 +14,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 - **`jd update`** - Self-update to latest version
 - **`jd venv`** - Create and manage Python virtual environments
 - **`jd requirements`** - Generate requirements.txt from active virtual environment
+- **`jd claude-github`** - Update Claude Code OAuth token across all GitHub repositories and 1Password
 
 ## Quick Start
 
@@ -256,6 +257,31 @@ Requirements workflow:
 3. Generate requirements: `jd requirements`
 4. Commit requirements.txt to your repository
 
+### Update Claude Code OAuth Token
+
+```bash
+# Update Claude Code OAuth token across all repositories and 1Password
+jd claude-github
+```
+
+This command automates the process of updating Claude Code OAuth tokens (which expire after 1 year):
+
+1. **Runs `claude setup-token`** to generate a new OAuth token
+2. **Prompts you to paste** the token after browser authentication
+3. **Updates 1Password** with the new token (`op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN`)
+4. **Loops through all GitHub repositories** and updates the `CLAUDE_CODE_OAUTH_TOKEN` secret where it exists
+5. **Provides summary** of updated, skipped, and failed repositories
+
+**Prerequisites:**
+
+- GitHub CLI (`gh`) - authenticated
+- 1Password CLI (`op`) - authenticated
+- Claude Code CLI (`claude`) - installed
+
+**Workflow:**
+
+The command will guide you through each step, showing authentication instructions in your browser, then systematically update all repositories that have the Claude Code OAuth token configured.
+
 ## Automated Dependency Management
 
 The jd CLI automatically handles dependency installation:
@@ -279,10 +305,16 @@ When you run a command that needs a dependency, jd CLI will:
 - Auto-installs via brew (macOS), apt/yum (Linux), or winget (Windows)
 - Guides through GitHub authentication
 
-**1Password CLI (`op`)** - For `jd repo` command
+**1Password CLI (`op`)** - For `jd repo` and `jd claude-github` commands
 
 - Required for managing GitHub secrets from 1Password
+- Auto-installs via brew (macOS), winget (Windows)
 - Install: https://developer.1password.com/docs/cli/get-started/
+
+**Claude Code CLI (`claude`)** - For `jd claude-github` command
+
+- Required for generating OAuth tokens
+- Install: https://claude.com/code
 
 **DevContainer CLI** - For `jd dev` command
 
@@ -335,7 +367,8 @@ jd/
 │   ├── init.sh              # Setup command
 │   ├── update.sh            # Self-update command
 │   ├── venv.sh              # Python virtual environment command
-│   └── requirements.sh      # Python requirements generator
+│   ├── requirements.sh      # Python requirements generator
+│   └── claude-github.sh     # Claude Code OAuth token updater
 ├── utils/
 │   ├── common.sh            # Common utilities
 │   └── dependency-check.sh # Dependency management

@@ -181,6 +181,68 @@ check_nodejs() {
     return 0
 }
 
+# Check 1Password CLI
+check_op_cli() {
+    local os=$(get_os)
+    local install_cmd=""
+
+    case "$os" in
+        macos)
+            install_cmd="brew install --cask 1password-cli"
+            ;;
+        linux)
+            install_cmd="Visit https://developer.1password.com/docs/cli/get-started/#install"
+            ;;
+        windows)
+            install_cmd="winget install AgileBits.1Password.CLI"
+            ;;
+        *)
+            install_cmd="Visit https://developer.1password.com/docs/cli/get-started/#install"
+            ;;
+    esac
+
+    if ! check_dependency "op" "1Password CLI" "$install_cmd"; then
+        return 1
+    fi
+
+    # Check if authenticated
+    if ! op account list &>/dev/null; then
+        warning "1Password CLI is not authenticated"
+
+        if confirm "Would you like to authenticate with 1Password now?" "y"; then
+            info "Starting 1Password authentication..."
+            echo ""
+            echo "You'll be guided through the 1Password sign-in process."
+            echo ""
+
+            if op account add; then
+                log "Successfully authenticated with 1Password"
+            else
+                error "1Password authentication failed"
+                echo "Please run manually: op account add"
+                return 1
+            fi
+        else
+            echo "To authenticate manually, run:"
+            echo "  op account add"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# Check Claude Code CLI
+check_claude_cli() {
+    local install_cmd="Visit https://claude.com/code to download Claude Code CLI"
+
+    if ! check_dependency "claude" "Claude Code CLI" "$install_cmd"; then
+        return 1
+    fi
+
+    return 0
+}
+
 # Check all dependencies for a specific command
 check_command_dependencies() {
     local cmd="$1"
@@ -197,6 +259,11 @@ check_command_dependencies() {
             ;;
         dev)
             check_devcontainer_cli || return 1
+            ;;
+        claude-github)
+            check_gh_cli || return 1
+            check_op_cli || return 1
+            check_claude_cli || return 1
             ;;
         *)
             # No specific dependencies

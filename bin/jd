@@ -31,6 +31,7 @@ Commands:
     npm               Setup npm package with OIDC trusted publishing
     venv              Create or activate Python virtual environment
     requirements      Generate requirements.txt from virtual environment
+    claude-github     Update Claude Code OAuth token across GitHub repos and 1Password
     init              Initialize jd CLI in current project
     update            Update jd CLI to latest version
     help              Show this help message
@@ -45,6 +46,7 @@ Examples:
     jd dev python             # Apply python template
     jd pr --draft            # Create draft PR
     jd pr --base develop     # Create PR against develop branch
+    jd claude-github         # Update Claude OAuth token everywhere
 
 For more information about a specific command, run:
     jd COMMAND --help
