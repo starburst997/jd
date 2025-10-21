@@ -37,6 +37,12 @@ brew install jd
 curl -fsSL https://cli.jd.boiv.in/install.sh | bash
 ```
 
+Uninstall
+
+```bash
+rm -rf ~/.jd && rm ~/.local/bin/jd
+```
+
 #### From Source
 
 ```bash
