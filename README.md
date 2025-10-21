@@ -46,10 +46,10 @@ brew tap jdboivin/tap
 brew install cli
 ```
 
-#### Via curl (Coming Soon)
+#### Via curl
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/starburst997/jd-cli/main/install.sh | bash
+curl -fsSL https://cli.jd.boiv.in/install.sh | bash
 ```
 
 #### From Source

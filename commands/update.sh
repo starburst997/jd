@@ -105,8 +105,11 @@ execute_command() {
     # Determine update method based on installation
     local install_method=""
 
+    # Check for .install_method marker file
+    if [ -f "$JD_CLI_ROOT/.install_method" ]; then
+        install_method=$(cat "$JD_CLI_ROOT/.install_method")
     # Check if installed via npm globally
-    if npm list -g @jdboivin/jd-cli &>/dev/null; then
+    elif command_exists npm && npm list -g @jdboivin/cli &>/dev/null; then
         install_method="npm"
     # Check if installed via homebrew
     elif command_exists brew && brew list jd-cli &>/dev/null; then
@@ -121,13 +124,31 @@ execute_command() {
     info "Installation method: $install_method"
 
     case "$install_method" in
+        curl)
+            if confirm "Update jd CLI via curl installer?" "y"; then
+                info "Updating via curl installer..."
+
+                # Download and run the installer
+                if command_exists curl; then
+                    curl -fsSL https://cli.jd.boiv.in/install.sh | bash
+                elif command_exists wget; then
+                    wget -qO- https://cli.jd.boiv.in/install.sh | bash
+                else
+                    error "Neither curl nor wget found"
+                    return 1
+                fi
+
+                log "Successfully updated jd CLI"
+            fi
+            ;;
+
         npm)
             if confirm "Update jd CLI via npm?" "y"; then
                 info "Updating via npm..."
 
-                local package_name="@jdboivin/jd-cli"
+                local package_name="@jdboivin/cli"
                 if [ "$channel" != "stable" ]; then
-                    package_name="@jdboivin/jd-cli@$channel"
+                    package_name="@jdboivin/cli@$channel"
                 fi
 
                 if npm update -g "$package_name"; then
@@ -188,7 +209,8 @@ execute_command() {
             error "Cannot determine installation method"
             echo ""
             echo "Please update manually:"
-            echo "  • If installed via npm: npm update -g @jdboivin/jd-cli"
+            echo "  • If installed via curl: curl -fsSL https://cli.jd.boiv.in/install.sh | bash"
+            echo "  • If installed via npm: npm update -g @jdboivin/cli"
             echo "  • If installed via brew: brew upgrade jd-cli"
             echo "  • If from source: cd to jd-cli directory and run: git pull && npm install"
             return 1
