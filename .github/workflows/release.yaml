@@ -32,6 +32,12 @@ jobs:
         id: version
         uses: starburst997/auto-version@v1
 
+      - name: Manage Deployment
+        uses: starburst997/deployment-actions@v1
+        with:
+          environment: npm
+          environment-url: https://www.npmjs.com/package/@jdboivin/cli
+
       - name: Publish NPM
         uses: starburst997/npm-publish@v1
         with:
