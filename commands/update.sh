@@ -31,12 +31,12 @@ check_for_updates() {
     info "Current version: $current_version"
 
     # Get latest version from npm
-    latest_version=$(npm view @jdboivin/jd-cli version 2>/dev/null || echo "")
+    latest_version=$(npm view @jdboivin/cli version 2>/dev/null || echo "")
 
     if [ -z "$latest_version" ]; then
         # Package might not be published yet, check GitHub releases
         if command_exists gh; then
-            latest_version=$(gh release list --repo jdboivin/jd-cli --limit 1 2>/dev/null | awk '{print $1}' | sed 's/^v//')
+            latest_version=$(gh release list --repo jdboivin/cli --limit 1 2>/dev/null | awk '{print $1}' | sed 's/^v//')
         fi
     fi
 
@@ -112,7 +112,7 @@ execute_command() {
     elif command_exists npm && npm list -g @jdboivin/cli &>/dev/null; then
         install_method="npm"
     # Check if installed via homebrew
-    elif command_exists brew && brew list jd-cli &>/dev/null; then
+    elif command_exists brew && brew list jd &>/dev/null; then
         install_method="brew"
     # Check if running from source
     elif [ -f "$JD_CLI_ROOT/package.json" ]; then
@@ -168,7 +168,7 @@ execute_command() {
             if confirm "Update jd CLI via Homebrew?" "y"; then
                 info "Updating via Homebrew..."
 
-                if brew upgrade jd-cli; then
+                if brew upgrade jd; then
                     log "Successfully updated jd CLI"
                 else
                     error "Failed to update via Homebrew"
@@ -211,8 +211,8 @@ execute_command() {
             echo "Please update manually:"
             echo "  • If installed via curl: curl -fsSL https://cli.jd.boiv.in/install.sh | bash"
             echo "  • If installed via npm: npm update -g @jdboivin/cli"
-            echo "  • If installed via brew: brew upgrade jd-cli"
-            echo "  • If from source: cd to jd-cli directory and run: git pull && npm install"
+            echo "  • If installed via brew: brew upgrade jd"
+            echo "  • If from source: cd to jd directory and run: git pull && npm install"
             return 1
             ;;
     esac

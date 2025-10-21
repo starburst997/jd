@@ -13,11 +13,11 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Installation directory
-INSTALL_DIR="${HOME}/.jd-cli"
+INSTALL_DIR="${HOME}/.jd"
 BIN_DIR="${HOME}/.local/bin"
 
 # GitHub repository
-GITHUB_REPO="starburst997/jd-cli"
+GITHUB_REPO="starburst997/jd"
 GITHUB_API="https://api.github.com/repos/${GITHUB_REPO}"
 
 # Logging functions
@@ -176,7 +176,7 @@ install_jd() {
 
     # Download source zip
     local zip_url="https://github.com/${GITHUB_REPO}/archive/refs/tags/${version}.zip"
-    local zip_file="${tmp_dir}/jd-cli.zip"
+    local zip_file="${tmp_dir}/jd.zip"
 
     log "Downloading jd CLI ${version}..."
     if ! download_file "$zip_url" "$zip_file"; then
@@ -192,11 +192,11 @@ install_jd() {
         exit 1
     fi
 
-    # Find extracted directory (it will be named jd-cli-{version})
-    local extracted_dir="${tmp_dir}/jd-cli-${clean_version}"
+    # Find extracted directory (it will be named jd-{version})
+    local extracted_dir="${tmp_dir}/jd-${clean_version}"
     if [ ! -d "$extracted_dir" ]; then
         # Try without version number
-        extracted_dir="${tmp_dir}/jd-cli-main"
+        extracted_dir="${tmp_dir}/jd-main"
         if [ ! -d "$extracted_dir" ]; then
             error "Failed to find extracted directory"
             exit 1

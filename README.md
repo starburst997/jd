@@ -16,21 +16,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 
 ## Quick Start
 
-### One-Line Install (Recommended)
-
-```bash
-npx @jdboivin/cli init
-```
-
-This will:
-
-1. Install the jd CLI
-2. Check all system requirements
-3. Install missing dependencies (with your permission)
-4. Configure GitHub authentication if needed
-5. Verify everything is working
-
-### Manual Installation
+### Installation
 
 #### Via npm
 
@@ -55,8 +41,8 @@ curl -fsSL https://cli.jd.boiv.in/install.sh | bash
 #### From Source
 
 ```bash
-git clone https://github.com/starburst997/jd-cli.git
-cd jd-cli
+git clone https://github.com/starburst997/jd.git
+cd jd
 npm install
 ./scripts/setup-local.sh
 ```
@@ -277,8 +263,8 @@ When you run a command that needs a dependency, jd CLI will:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/starburst997/jd-cli.git
-   cd jd-cli
+   git clone https://github.com/starburst997/jd.git
+   cd jd
    ```
 
 2. Run the setup script:
@@ -301,7 +287,7 @@ When you run a command that needs a dependency, jd CLI will:
 ### Project Structure
 
 ```
-jd-cli/
+jd/
 ├── bin/
 │   └── jd                    # Main CLI entry point
 ├── commands/
@@ -465,4 +451,4 @@ JD Boivin
 
 ## Support
 
-For issues and feature requests, please use the [GitHub Issues](https://github.com/starburst997/jd-cli/issues) page.
+For issues and feature requests, please use the [GitHub Issues](https://github.com/starburst997/jd/issues) page.

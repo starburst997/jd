@@ -50,8 +50,8 @@ Key functions:
 
 ```bash
 # Clone and setup
-git clone https://github.com/starburst997/jd-cli.git
-cd jd-cli
+git clone https://github.com/starburst997/jd.git
+cd jd
 ./scripts/setup-local.sh  # Installs deps, creates symlink
 ```
 
@@ -148,7 +148,7 @@ Done via github action
 
 ### Update Command (`commands/update.sh`)
 
-- Self-updates via `npm install -g @jdboivin/jd-cli@latest`
+- Self-updates via `npm install -g @jdboivin/cli@latest`
 - Can check for updates without installing: `jd update --check`
 
 ## Common Tasks
