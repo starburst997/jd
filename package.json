@@ -19,7 +19,11 @@
     "github",
     "devcontainer"
   ],
-  "author": "JD Boivin",
+  "author": "JD Boivin <jd@boiv.in>",
+  "bugs": {
+    "url": "https://github.com/starburst997/jd/issues"
+  },
+  "homepage": "https://cli.jd.boiv.in",
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0",
