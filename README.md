@@ -10,6 +10,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 - **`jd dev`** - Apply devcontainer templates to projects with a single command
 - **`jd pr`** - Create GitHub pull requests with smart defaults
 - **`jd repo`** - Initialize GitHub repository and configure secrets from 1Password
+- **`jd npm`** - Setup npm package with OIDC trusted publishing
 - **`jd update`** - Self-update to latest version
 - **`jd venv`** - Create and manage Python virtual environments
 - **`jd requirements`** - Generate requirements.txt from active virtual environment
@@ -176,6 +177,37 @@ Secret references in 1Password:
 - OVSX_PAT: `op://dev/extensions/OVSX_PAT`
 - CLAUDE_CODE_OAUTH_TOKEN: `op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN`
 
+### Setup npm Package with OIDC Publishing
+
+```bash
+# Setup npm package with OIDC trusted publishing
+jd npm
+```
+
+This command automates the initial setup for npm OIDC trusted publishing:
+
+1. **Reads package information** from your `package.json`
+2. **Creates and publishes** a minimal `0.0.0-placeholder` version
+3. **Opens the browser** to the npm package access settings page
+4. **Provides instructions** for configuring OIDC trusted publishing
+
+The npm command solves a key limitation: npm requires a package to exist before you can configure OIDC settings. After running this command:
+
+- Your package will exist on npmjs.com
+- You can configure OIDC trusted publishing through the web UI
+- Future publishes will use OIDC (no tokens needed in CI/CD)
+- The placeholder version will be replaced by your real package
+
+**Prerequisites:**
+
+- `package.json` in current directory
+- npm account credentials for `npm login`
+- GitHub Actions workflow with `id-token: write` permission
+
+**After OIDC configuration:**
+
+Your GitHub Actions can publish automatically using OIDC authentication - no npm tokens required!
+
 ### Update jd CLI
 
 ```bash
@@ -299,6 +331,7 @@ jd/
 │   ├── dev.sh               # DevContainer command
 │   ├── pr.sh                # GitHub PR command
 │   ├── repo.sh              # GitHub repository initialization command
+│   ├── npm.sh               # npm OIDC setup command
 │   ├── init.sh              # Setup command
 │   ├── update.sh            # Self-update command
 │   ├── venv.sh              # Python virtual environment command

@@ -26,6 +26,10 @@ info() {
     echo -e "${BLUE}[jd info]${NC} $*"
 }
 
+success() {
+    echo -e "${GREEN}✓${NC} $*"
+}
+
 debug() {
     if [ "$VERBOSE" = true ]; then
         echo -e "${BLUE}[jd debug]${NC} $*"

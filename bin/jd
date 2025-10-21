@@ -28,6 +28,7 @@ Commands:
     dev [template]    Apply devcontainer template to current project
     pr [options]      Create GitHub pull request with defaults
     repo [options]    Initialize GitHub repository and configure secrets
+    npm               Setup npm package with OIDC trusted publishing
     venv              Create or activate Python virtual environment
     requirements      Generate requirements.txt from virtual environment
     init              Initialize jd CLI in current project
