@@ -7,7 +7,18 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m' # No Color
+
+# RGB/256 color codes for gradient effects
+GRADIENT_1='\033[38;5;39m'   # Bright blue
+GRADIENT_2='\033[38;5;75m'   # Light blue
+GRADIENT_3='\033[38;5;111m'  # Sky blue
+GRADIENT_4='\033[38;5;147m'  # Lavender
+GRADIENT_5='\033[38;5;183m'  # Light purple
 
 # Logging functions
 log() {
@@ -33,6 +44,22 @@ success() {
 debug() {
     if [ "$VERBOSE" = true ]; then
         echo -e "${BLUE}[jd debug]${NC} $*"
+    fi
+}
+
+# Show colorful JD banner
+show_banner() {
+    # Only show banner if not in a pipe and stdout is a terminal
+    if [ -t 1 ]; then
+        echo -e "${GRADIENT_1}"
+        echo -e "     ██╗${GRADIENT_2}██████╗ ${NC}"
+        echo -e "${GRADIENT_1}     ██║${GRADIENT_2}██╔══██╗${NC}"
+        echo -e "${GRADIENT_2}     ██║${GRADIENT_3}██║  ██║${NC}"
+        echo -e "${GRADIENT_3}██   ██║${GRADIENT_4}██║  ██║${NC}"
+        echo -e "${GRADIENT_4}╚█████╔╝${GRADIENT_5}██████╔╝${NC}"
+        echo -e "${GRADIENT_5} ╚════╝ ╚═════╝ ${NC}"
+        echo -e "${DIM}   Personal Dev Toolkit${NC}"
+        echo ""
     fi
 }
 

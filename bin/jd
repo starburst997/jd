@@ -17,11 +17,12 @@ source "$ROOT_DIR/utils/dependency-check.sh"
 export JD_CLI_VERSION="${JD_CLI_VERSION:-0.1.0}"
 export JD_CLI_ROOT="$ROOT_DIR"
 
+# Show banner on every invocation
+show_banner
+
 # Function to show help
 show_help() {
     cat <<EOF
-jd - Personal Development CLI Tools
-
 Usage: jd [OPTIONS] COMMAND [ARGS...]
 
 Commands:
