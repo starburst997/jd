@@ -63,12 +63,14 @@ _jd() {
                     ;;
                 repo)
                     _arguments \
-                        '--name[Repository name]:name:' \
+                        '--npm[Also add NPM_TOKEN secret]' \
+                        '--extensions[Also add VSCE_PAT and OVSX_PAT secrets]' \
+                        '--claude[Also add CLAUDE_CODE_OAUTH_TOKEN secret]' \
+                        '--apple[Also add Apple App Store and Fastlane secrets]' \
+                        '--suffix[Add suffix to APPSTORE and MATCH_ secrets]:suffix:' \
+                        '--public[Create public repository (default: private)]' \
                         '--description[Repository description]:description:' \
-                        '--private[Create private repository]' \
-                        '--public[Create public repository]' \
-                        '--org[Organization name]:organization:' \
-                        '--no-secrets[Skip secrets configuration]' \
+                        '--no-init[Skip git initialization (use existing repo)]' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
                 npm)
