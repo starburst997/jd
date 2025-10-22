@@ -20,6 +20,7 @@ Options:
     --npm                 Also add NPM_TOKEN secret
     --extensions          Also add VSCE_PAT and OVSX_PAT secrets
     --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret
+    --apple               Also add Apple App Store and Fastlane secrets
     --public              Create public repository (default: private)
     --description DESC    Repository description
     --no-init             Skip git initialization (use existing repo)
@@ -30,6 +31,7 @@ Examples:
     jd repo --npm                        # Add NPM_TOKEN as well
     jd repo --extensions                 # Add VSCE_PAT and OVSX_PAT as well
     jd repo --claude                     # Add CLAUDE_CODE_OAUTH_TOKEN as well
+    jd repo --apple                      # Add Apple, Fastlane, and GH_PAT secrets
     jd repo --npm --extensions --claude  # Add all secrets
     jd repo --public --description "My awesome project"
 
@@ -40,6 +42,12 @@ Secret References:
     VSCE_PAT:                 op://dev/extensions/VSCE_PAT
     OVSX_PAT:                 op://dev/extensions/OVSX_PAT
     CLAUDE_CODE_OAUTH_TOKEN:  op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN
+    APPSTORE_ISSUER_ID:       op://dev/apple/APPSTORE_ISSUER_ID
+    APPSTORE_KEY_ID:          op://dev/apple/APPSTORE_KEY_ID
+    APPSTORE_P8:              op://dev/apple/APPSTORE_P8
+    MATCH_REPOSITORY:         op://dev/fastlane/MATCH_REPOSITORY
+    MATCH_PASSWORD:           op://dev/fastlane/MATCH_PASSWORD
+    GH_PAT:                   op://dev/github/GH_PAT
 
 EOF
 }
@@ -75,6 +83,7 @@ execute_command() {
     local add_npm=false
     local add_extensions=false
     local add_claude=false
+    local add_apple=false
     local visibility="private"
     local description=""
     local skip_init=false
@@ -92,6 +101,10 @@ execute_command() {
                 ;;
             --claude)
                 add_claude=true
+                shift
+                ;;
+            --apple)
+                add_apple=true
                 shift
                 ;;
             --public)
@@ -178,6 +191,16 @@ execute_command() {
     # Add Claude Code OAuth token if requested
     if [ "$add_claude" = true ]; then
         add_secret "CLAUDE_CODE_OAUTH_TOKEN" "op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN" || return 1
+    fi
+
+    # Add Apple and Fastlane secrets if requested
+    if [ "$add_apple" = true ]; then
+        add_secret "APPSTORE_ISSUER_ID" "op://dev/apple/APPSTORE_ISSUER_ID" || return 1
+        add_secret "APPSTORE_KEY_ID" "op://dev/apple/APPSTORE_KEY_ID" || return 1
+        add_secret "APPSTORE_P8" "op://dev/apple/APPSTORE_P8" || return 1
+        add_secret "MATCH_REPOSITORY" "op://dev/fastlane/MATCH_REPOSITORY" || return 1
+        add_secret "MATCH_PASSWORD" "op://dev/fastlane/MATCH_PASSWORD" || return 1
+        add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
     fi
 
     log "Repository initialization complete!"
