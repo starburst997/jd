@@ -103,6 +103,26 @@ jd <command> [args]
 
 **Failing to update all documentation and completion files will result in an incomplete implementation.**
 
+### Adding Flags to Existing Commands
+
+**CRITICAL: When adding flags to an existing command, you MUST update ALL of these files:**
+
+1. **Command file** (`commands/<command>.sh`) - Update:
+   - The `show_<command>_help()` function with the new flag documentation
+   - The options parsing case statement to handle the new flag
+   - The execution logic to use the new flag
+
+2. **`completions/jd.bash`** - Add new flag to the command's options list in the case statement
+
+3. **`completions/jd.zsh`** - Add new flag with description to the command's `_arguments` list
+
+**Example: Adding `--apple` and `--suffix` flags to the `repo` command requires updating:**
+- `commands/repo.sh` (help text, parsing, logic)
+- `completions/jd.bash` (add to `repo_opts`)
+- `completions/jd.zsh` (add to `repo` case's `_arguments`)
+
+**Failing to update completion scripts will result in incomplete tab completion functionality.**
+
 ### Publishing New Versions
 
 Done via github action
@@ -145,6 +165,39 @@ Done via github action
 - Respects GitHub PR templates if they exist in the repo
 - Offers to push unpushed commits before creating PR
 - Uses `gh pr create` with smart defaults
+
+### Repo Command (`commands/repo.sh`)
+
+- Initializes GitHub repository for the current directory
+- Configures GitHub Actions secrets using 1Password CLI (`op`) and GitHub CLI (`gh`)
+- Always adds bot secrets: `BOT_ID`, `BOT_KEY`
+- Optional secret groups via flags:
+  - `--npm`: Adds `NPM_TOKEN`
+  - `--extensions`: Adds `VSCE_PAT`, `OVSX_PAT`
+  - `--claude`: Adds `CLAUDE_CODE_OAUTH_TOKEN`
+  - `--apple`: Adds Apple App Store, Fastlane, and GitHub PAT secrets
+- Apple secrets support environment-specific suffixes via `--suffix` flag
+- Dependencies: `gh`, `op` (checked via `check_command_dependencies`)
+
+**Apple Secrets (`--apple` flag):**
+- App Store Connect (with suffix support):
+  - `APPSTORE_ISSUER_ID[_SUFFIX]`
+  - `APPSTORE_KEY_ID[_SUFFIX]`
+  - `APPSTORE_P8[_SUFFIX]`
+- Apple Developer (no suffix):
+  - `APPLE_TEAM_ID`
+  - `APPLE_DEVELOPER_EMAIL`
+  - `APPLE_CONNECT_EMAIL`
+- Fastlane (with suffix support):
+  - `MATCH_REPOSITORY[_SUFFIX]`
+  - `MATCH_PASSWORD[_SUFFIX]`
+- GitHub: `GH_PAT` (no suffix)
+
+**Suffix Behavior (`--suffix` flag):**
+- Only applies to `APPSTORE_*` and `MATCH_*` secrets
+- Appends `_<SUFFIX>` to both the GitHub secret name AND the 1Password reference
+- Example: `--suffix DEV` creates `APPSTORE_ISSUER_ID_DEV` from `op://dev/apple/APPSTORE_ISSUER_ID_DEV`
+- Allows multiple environments (dev/staging/prod) to coexist in same repo
 
 ### Dev Command (`commands/dev.sh`)
 
