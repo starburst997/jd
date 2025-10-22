@@ -21,18 +21,20 @@ Options:
     --extensions          Also add VSCE_PAT and OVSX_PAT secrets
     --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret
     --apple               Also add Apple App Store and Fastlane secrets
+    --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
     --public              Create public repository (default: private)
     --description DESC    Repository description
     --no-init             Skip git initialization (use existing repo)
     -h, --help           Show this help message
 
 Examples:
-    jd repo                              # Initialize private repo with bot secrets
-    jd repo --npm                        # Add NPM_TOKEN as well
-    jd repo --extensions                 # Add VSCE_PAT and OVSX_PAT as well
-    jd repo --claude                     # Add CLAUDE_CODE_OAUTH_TOKEN as well
-    jd repo --apple                      # Add Apple, Fastlane, and GH_PAT secrets
-    jd repo --npm --extensions --claude  # Add all secrets
+    jd repo                                    # Initialize private repo with bot secrets
+    jd repo --npm                              # Add NPM_TOKEN as well
+    jd repo --extensions                       # Add VSCE_PAT and OVSX_PAT as well
+    jd repo --claude                           # Add CLAUDE_CODE_OAUTH_TOKEN as well
+    jd repo --apple                            # Add Apple, Fastlane, and GH_PAT secrets
+    jd repo --apple --suffix DEV               # Add Apple secrets with _DEV suffix
+    jd repo --npm --extensions --claude        # Add all secrets
     jd repo --public --description "My awesome project"
 
 Secret References:
@@ -42,11 +44,11 @@ Secret References:
     VSCE_PAT:                 op://dev/extensions/VSCE_PAT
     OVSX_PAT:                 op://dev/extensions/OVSX_PAT
     CLAUDE_CODE_OAUTH_TOKEN:  op://dev/claude/CLAUDE_CODE_OAUTH_TOKEN
-    APPSTORE_ISSUER_ID:       op://dev/apple/APPSTORE_ISSUER_ID
-    APPSTORE_KEY_ID:          op://dev/apple/APPSTORE_KEY_ID
-    APPSTORE_P8:              op://dev/apple/APPSTORE_P8
-    MATCH_REPOSITORY:         op://dev/fastlane/MATCH_REPOSITORY
-    MATCH_PASSWORD:           op://dev/fastlane/MATCH_PASSWORD
+    APPSTORE_ISSUER_ID:       op://dev/apple/APPSTORE_ISSUER_ID (or APPSTORE_ISSUER_ID_<SUFFIX>)
+    APPSTORE_KEY_ID:          op://dev/apple/APPSTORE_KEY_ID (or APPSTORE_KEY_ID_<SUFFIX>)
+    APPSTORE_P8:              op://dev/apple/APPSTORE_P8 (or APPSTORE_P8_<SUFFIX>)
+    MATCH_REPOSITORY:         op://dev/fastlane/MATCH_REPOSITORY (or MATCH_REPOSITORY_<SUFFIX>)
+    MATCH_PASSWORD:           op://dev/fastlane/MATCH_PASSWORD (or MATCH_PASSWORD_<SUFFIX>)
     GH_PAT:                   op://dev/github/GH_PAT
 
 EOF
@@ -84,6 +86,7 @@ execute_command() {
     local add_extensions=false
     local add_claude=false
     local add_apple=false
+    local suffix=""
     local visibility="private"
     local description=""
     local skip_init=false
@@ -106,6 +109,10 @@ execute_command() {
             --apple)
                 add_apple=true
                 shift
+                ;;
+            --suffix)
+                suffix="$2"
+                shift 2
                 ;;
             --public)
                 visibility="public"
@@ -195,11 +202,17 @@ execute_command() {
 
     # Add Apple and Fastlane secrets if requested
     if [ "$add_apple" = true ]; then
-        add_secret "APPSTORE_ISSUER_ID" "op://dev/apple/APPSTORE_ISSUER_ID" || return 1
-        add_secret "APPSTORE_KEY_ID" "op://dev/apple/APPSTORE_KEY_ID" || return 1
-        add_secret "APPSTORE_P8" "op://dev/apple/APPSTORE_P8" || return 1
-        add_secret "MATCH_REPOSITORY" "op://dev/fastlane/MATCH_REPOSITORY" || return 1
-        add_secret "MATCH_PASSWORD" "op://dev/fastlane/MATCH_PASSWORD" || return 1
+        # Determine suffix for secret names and 1Password references
+        local secret_suffix=""
+        if [ -n "$suffix" ]; then
+            secret_suffix="_${suffix}"
+        fi
+
+        add_secret "APPSTORE_ISSUER_ID${secret_suffix}" "op://dev/apple/APPSTORE_ISSUER_ID${secret_suffix}" || return 1
+        add_secret "APPSTORE_KEY_ID${secret_suffix}" "op://dev/apple/APPSTORE_KEY_ID${secret_suffix}" || return 1
+        add_secret "APPSTORE_P8${secret_suffix}" "op://dev/apple/APPSTORE_P8${secret_suffix}" || return 1
+        add_secret "MATCH_REPOSITORY${secret_suffix}" "op://dev/fastlane/MATCH_REPOSITORY${secret_suffix}" || return 1
+        add_secret "MATCH_PASSWORD${secret_suffix}" "op://dev/fastlane/MATCH_PASSWORD${secret_suffix}" || return 1
         add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
     fi
 
