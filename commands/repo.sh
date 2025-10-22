@@ -47,6 +47,9 @@ Secret References:
     APPSTORE_ISSUER_ID:       op://dev/apple/APPSTORE_ISSUER_ID (or APPSTORE_ISSUER_ID_<SUFFIX>)
     APPSTORE_KEY_ID:          op://dev/apple/APPSTORE_KEY_ID (or APPSTORE_KEY_ID_<SUFFIX>)
     APPSTORE_P8:              op://dev/apple/APPSTORE_P8 (or APPSTORE_P8_<SUFFIX>)
+    APPLE_TEAM_ID:            op://dev/apple/APPLE_TEAM_ID
+    APPLE_DEVELOPER_EMAIL:    op://dev/apple/APPLE_DEVELOPER_EMAIL
+    APPLE_CONNECT_EMAIL:      op://dev/apple/APPLE_CONNECT_EMAIL
     MATCH_REPOSITORY:         op://dev/fastlane/MATCH_REPOSITORY (or MATCH_REPOSITORY_<SUFFIX>)
     MATCH_PASSWORD:           op://dev/fastlane/MATCH_PASSWORD (or MATCH_PASSWORD_<SUFFIX>)
     GH_PAT:                   op://dev/github/GH_PAT
@@ -211,6 +214,9 @@ execute_command() {
         add_secret "APPSTORE_ISSUER_ID${secret_suffix}" "op://dev/apple/APPSTORE_ISSUER_ID${secret_suffix}" || return 1
         add_secret "APPSTORE_KEY_ID${secret_suffix}" "op://dev/apple/APPSTORE_KEY_ID${secret_suffix}" || return 1
         add_secret "APPSTORE_P8${secret_suffix}" "op://dev/apple/APPSTORE_P8${secret_suffix}" || return 1
+        add_secret "APPLE_TEAM_ID" "op://dev/apple/APPLE_TEAM_ID" || return 1
+        add_secret "APPLE_DEVELOPER_EMAIL" "op://dev/apple/APPLE_DEVELOPER_EMAIL" || return 1
+        add_secret "APPLE_CONNECT_EMAIL" "op://dev/apple/APPLE_CONNECT_EMAIL" || return 1
         add_secret "MATCH_REPOSITORY${secret_suffix}" "op://dev/fastlane/MATCH_REPOSITORY${secret_suffix}" || return 1
         add_secret "MATCH_PASSWORD${secret_suffix}" "op://dev/fastlane/MATCH_PASSWORD${secret_suffix}" || return 1
         add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
