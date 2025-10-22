@@ -37,6 +37,7 @@ jobs:
         with:
           environment: npm
           environment-url: https://www.npmjs.com/package/@jdboivin/cli
+          token: ${{ steps.bot.outputs.token }}
 
       - name: Publish NPM
         uses: starburst997/npm-publish@v1
