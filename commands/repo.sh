@@ -186,6 +186,7 @@ execute_command() {
     # Always add bot secrets
     add_secret "BOT_ID" "op://dev/github-app/BOT_ID" || return 1
     add_secret "BOT_KEY" "op://dev/github-app/BOT_KEY" || return 1
+    add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
 
     # Add NPM token if requested
     if [ "$add_npm" = true ]; then
@@ -219,7 +220,7 @@ execute_command() {
         add_secret "APPLE_CONNECT_EMAIL" "op://dev/apple/APPLE_CONNECT_EMAIL" || return 1
         add_secret "MATCH_REPOSITORY${secret_suffix}" "op://dev/fastlane/MATCH_REPOSITORY${secret_suffix}" || return 1
         add_secret "MATCH_PASSWORD${secret_suffix}" "op://dev/fastlane/MATCH_PASSWORD${secret_suffix}" || return 1
-        add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
+        #add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
     fi
 
     log "Repository initialization complete!"
