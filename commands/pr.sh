@@ -338,6 +338,12 @@ execute_command() {
         fi
     fi
 
+    # Ensure base branch is pushed to origin (so PR will be against latest)
+    if ! ensure_branch_pushed "$base_branch" "Base branch"; then
+        error "Cannot create PR without pushing base branch"
+        return 1
+    fi
+
     # Push current branch if needed
     if ! git ls-remote --exit-code origin "$head_branch" &>/dev/null; then
         log "Pushing branch to remote..."

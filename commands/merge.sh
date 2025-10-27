@@ -217,6 +217,13 @@ execute_command() {
         fi
     fi
 
+    # Ensure default branch is pushed to origin before merging
+    # This ensures the PR is merging into the latest version of the base branch
+    if ! ensure_branch_pushed "$default_branch" "Default branch"; then
+        error "Cannot merge PR without pushing default branch"
+        return 1
+    fi
+
     info "Looking for PR for branch: $branch"
 
     # Find PR for this branch

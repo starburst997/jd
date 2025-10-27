@@ -169,3 +169,66 @@ get_os() {
         *) echo "unknown" ;;
     esac
 }
+
+# Check if a branch needs to be pushed (has local commits ahead of remote)
+# Returns 0 if push is needed, 1 if not
+branch_needs_push() {
+    local branch="$1"
+
+    # Check if remote branch exists
+    if ! git ls-remote --exit-code origin "$branch" &>/dev/null; then
+        # Remote branch doesn't exist, so it needs to be pushed
+        return 0
+    fi
+
+    # Check if local branch is ahead of remote
+    local ahead=$(git rev-list --count "origin/$branch..$branch" 2>/dev/null)
+    if [ -z "$ahead" ] || [ "$ahead" -eq 0 ]; then
+        return 1  # No push needed
+    fi
+
+    return 0  # Push needed
+}
+
+# Push a branch to origin without checking it out
+# Usage: push_branch_without_checkout "branch-name"
+push_branch_without_checkout() {
+    local branch="$1"
+
+    debug "Pushing $branch to origin without checkout"
+
+    # Use git push with refspec to push without checkout
+    # Format: git push origin <local-ref>:<remote-ref>
+    if git push origin "$branch:$branch" 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Ensure branch is pushed to origin, prompting user if needed
+# Usage: ensure_branch_pushed "branch-name" "description"
+ensure_branch_pushed() {
+    local branch="$1"
+    local description="${2:-the branch}"
+
+    if branch_needs_push "$branch"; then
+        warning "$description ($branch) has unpushed commits"
+        if confirm "Push $branch to origin before continuing?" "y"; then
+            info "Pushing $branch to origin..."
+            if ! push_branch_without_checkout "$branch"; then
+                error "Failed to push $branch to origin"
+                info "You may need to manually run: git push origin $branch"
+                return 1
+            fi
+            log "✓ Pushed $branch to origin"
+        else
+            warning "Continuing without pushing $branch"
+            warning "This may cause issues if the remote is out of sync"
+        fi
+    else
+        debug "$branch is up to date with origin"
+    fi
+
+    return 0
+}
