@@ -46,6 +46,7 @@ _jd() {
                         '--base[Base branch]:branch:' \
                         '--head[Head branch]:branch:' \
                         '--draft[Create as draft PR]' \
+                        '--auto-draft[Auto-detect draft from branch name (wip/draft prefixes)]' \
                         '--web[Open PR in web browser]' \
                         '--reviewers[Comma-separated list of reviewers]:reviewers:' \
                         '--assignees[Comma-separated list of assignees]:assignees:' \

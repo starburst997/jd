@@ -103,6 +103,9 @@ jd pr
 # Create draft PR with AI generation
 jd pr --draft
 
+# Auto-detect draft from branch name (wip/draft prefix/suffix)
+jd pr --auto-draft
+
 # Create PR with custom title (AI generates description)
 jd pr --title "Add new feature"
 
@@ -134,7 +137,7 @@ Smart PR features:
 - Supports multiple Claude models: `sonnet` (default), `haiku`, `opus`
 - Auto-generates title from branch name or recent commits (fallback)
 - Creates PR body from commit history (fallback)
-- Detects WIP/Draft branches
+- Optional auto-detection of WIP/Draft branches with `--auto-draft` flag
 - Uses repository PR templates if available
 - Auto-assigns yourself
 - Offers to push changes if needed

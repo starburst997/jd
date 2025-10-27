@@ -24,7 +24,7 @@ _jd_completions() {
     # Command-specific completions
     case "${COMP_WORDS[1]}" in
         pr)
-            local pr_opts="--title --body --base --head --draft --web --reviewers --assignees --labels --milestone --no-maintainer --template --no-claude --model -h --help"
+            local pr_opts="--title --body --base --head --draft --auto-draft --web --reviewers --assignees --labels --milestone --no-maintainer --template --no-claude --model -h --help"
             # If previous word was --model, suggest model options
             if [ "$prev" = "--model" ]; then
                 COMPREPLY=( $(compgen -W "sonnet haiku opus" -- ${cur}) )

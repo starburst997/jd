@@ -48,6 +48,7 @@ Examples:
     jd dev                    # Apply default nodejs-postgres template
     jd dev python             # Apply python template
     jd pr --draft            # Create draft PR
+    jd pr --auto-draft       # Auto-detect draft from branch name
     jd pr --base develop     # Create PR against develop branch
     jd merge                  # Merge PR for current branch and update local repo
     jd merge --clean         # Cleanup old temporary branches

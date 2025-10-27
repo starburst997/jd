@@ -528,13 +528,17 @@
               Create GitHub pull requests with AI-generated title and description
             </div>
             <div class="command-usage">
-              jd pr [--draft] [--base BRANCH] [--web] [--title TITLE] [--body BODY]
+              jd pr [--draft] [--auto-draft] [--base BRANCH] [--web] [--title TITLE] [--body BODY]
               [--no-claude] [--model MODEL] [--reviewers USERS] [--labels LABELS]
             </div>
             <ul class="args-list">
               <li>
                 <span class="arg-name">--draft</span>
                 <span class="arg-desc">Create as draft PR</span>
+              </li>
+              <li>
+                <span class="arg-name">--auto-draft</span>
+                <span class="arg-desc">Auto-detect draft from branch name (wip/draft prefixes)</span>
               </li>
               <li>
                 <span class="arg-name">--base BRANCH</span>

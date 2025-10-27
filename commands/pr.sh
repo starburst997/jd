@@ -14,6 +14,7 @@ Options:
     --base BRANCH     Base branch (defaults to main/master)
     --head BRANCH     Head branch (defaults to current branch)
     --draft           Create as draft PR
+    --auto-draft      Auto-detect draft from branch name (wip/draft prefixes)
     --web             Open PR in web browser after creation
     --reviewers LIST  Comma-separated list of reviewers
     --assignees LIST  Comma-separated list of assignees
@@ -29,13 +30,13 @@ Smart Features:
     - AI-powered title and description generation using Claude CLI
     - Auto-detects conventional commit format for title (fallback)
     - Uses recent commit messages for PR body if not specified (fallback)
-    - Detects WIP/Draft indicators in branch name
     - Auto-assigns yourself if no assignees specified
     - Uses repository's default PR template if exists
 
 Examples:
     jd pr                                    # Create PR with AI-generated content
     jd pr --draft                           # Create draft PR with AI generation
+    jd pr --auto-draft                      # Auto-detect draft from branch name
     jd pr --title "Add feature"             # Custom title, AI-generated body
     jd pr --no-claude                       # Disable AI, use fallback generation
     jd pr --model haiku                     # Use Haiku model for faster generation
@@ -226,6 +227,7 @@ execute_command() {
     local base_branch=""
     local head_branch=""
     local draft=false
+    local auto_draft=false
     local open_web=false
     local reviewers=""
     local assignees=""
@@ -257,6 +259,10 @@ execute_command() {
                 ;;
             --draft)
                 draft=true
+                shift
+                ;;
+            --auto-draft)
+                auto_draft=true
                 shift
                 ;;
             --web)
@@ -345,8 +351,8 @@ execute_command() {
         fi
     fi
 
-    # Auto-detect draft status
-    if [ "$draft" = false ] && is_draft_branch "$head_branch"; then
+    # Auto-detect draft status if flag is enabled
+    if [ "$auto_draft" = true ] && [ "$draft" = false ] && is_draft_branch "$head_branch"; then
         info "Auto-detected draft branch pattern"
         draft=true
     fi
