@@ -17,6 +17,8 @@ Options:
 Features:
     - Auto-detects PR for current branch using gh CLI
     - Merges the PR on GitHub
+    - Deletes both remote and local branches after successful merge
+    - Preserves default branch and main branch (never deletes them locally)
     - Fetches latest changes from origin
     - Switches to updated default branch
     - Worktree-aware: creates temp branch if default branch is checked out elsewhere
@@ -357,6 +359,25 @@ execute_command() {
                     error "Failed to create temporary branch"
                     return 1
                 fi
+            fi
+        fi
+
+        # Delete local branch after successful merge and branch switch
+        # Skip deletion for default branch and main branch
+        if [ "$branch" != "$default_branch" ] && [ "$branch" != "main" ]; then
+            info "Deleting local branch: $branch"
+            # The remote branch is already deleted by gh pr merge --delete-branch
+            if git branch -D "$branch" 2>/dev/null; then
+                log "✓ Deleted local branch: $branch"
+            else
+                warning "Failed to delete local branch: $branch"
+                debug "Branch may not exist or is the current branch"
+            fi
+        else
+            if [ "$branch" = "$default_branch" ]; then
+                debug "Skipping local branch deletion (it's the default branch)"
+            elif [ "$branch" = "main" ]; then
+                debug "Skipping local branch deletion (it's the main branch)"
             fi
         fi
     fi
