@@ -68,6 +68,7 @@ _jd() {
                         '--claude[Also add CLAUDE_CODE_OAUTH_TOKEN secret]' \
                         '--apple[Also add Apple App Store and Fastlane secrets]' \
                         '--suffix[Add suffix to APPSTORE and MATCH_ secrets]:suffix:' \
+                        '--rules[Apply branch protection rulesets (Main and Dev branches)]' \
                         '--public[Create public repository (default: private)]' \
                         '--description[Repository description]:description:' \
                         '--no-init[Skip git initialization (use existing repo)]' \

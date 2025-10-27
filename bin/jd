@@ -48,6 +48,7 @@ Examples:
     jd dev python             # Apply python template
     jd pr --draft            # Create draft PR
     jd pr --base develop     # Create PR against develop branch
+    jd repo --rules          # Initialize repo with branch protection rulesets
     jd claude-github         # Update Claude OAuth token everywhere
 
 For more information about a specific command, run:

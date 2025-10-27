@@ -531,7 +531,7 @@
               Initialize GitHub repository and configure secrets from 1Password
             </div>
             <div class="command-usage">
-              jd repo [--npm] [--extensions] [--claude] [--public]
+              jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix SUFFIX] [--rules] [--public]
               [--description DESC] [--no-init]
             </div>
             <ul class="args-list">
@@ -549,6 +549,18 @@
               <li>
                 <span class="arg-name">--claude</span>
                 <span class="arg-desc">Add CLAUDE_CODE_OAUTH_TOKEN secret</span>
+              </li>
+              <li>
+                <span class="arg-name">--apple</span>
+                <span class="arg-desc">Add Apple App Store, Fastlane, and GitHub PAT secrets</span>
+              </li>
+              <li>
+                <span class="arg-name">--suffix SUFFIX</span>
+                <span class="arg-desc">Add suffix to APPSTORE_* and MATCH_* secrets (use with --apple)</span>
+              </li>
+              <li>
+                <span class="arg-name">--rules</span>
+                <span class="arg-desc">Apply branch protection rulesets for main and dev branches</span>
               </li>
               <li>
                 <span class="arg-name">--public</span>

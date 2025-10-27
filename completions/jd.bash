@@ -33,7 +33,7 @@ _jd_completions() {
             COMPREPLY=( $(compgen -W "${dev_opts}" -- ${cur}) )
             ;;
         repo)
-            local repo_opts="--npm --extensions --claude --apple --suffix --public --description --no-init -h --help"
+            local repo_opts="--npm --extensions --claude --apple --suffix --rules --public --description --no-init -h --help"
             COMPREPLY=( $(compgen -W "${repo_opts}" -- ${cur}) )
             ;;
         npm)

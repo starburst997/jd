@@ -22,6 +22,7 @@ Options:
     --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret
     --apple               Also add Apple App Store and Fastlane secrets
     --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
+    --rules               Apply branch protection rulesets (Main and Dev branches)
     --public              Create public repository (default: private)
     --description DESC    Repository description
     --no-init             Skip git initialization (use existing repo)
@@ -34,6 +35,7 @@ Examples:
     jd repo --claude                           # Add CLAUDE_CODE_OAUTH_TOKEN as well
     jd repo --apple                            # Add Apple, Fastlane, and GH_PAT secrets
     jd repo --apple --suffix DEV               # Add Apple secrets with _DEV suffix
+    jd repo --rules                            # Apply branch protection rulesets
     jd repo --npm --extensions --claude        # Add all secrets
     jd repo --public --description "My awesome project"
 
@@ -80,6 +82,45 @@ add_secret() {
     fi
 }
 
+# Apply branch protection rulesets to the GitHub repository
+apply_rulesets() {
+    local rulesets_file="$JD_CLI_ROOT/data/rulesets.json"
+
+    if [ ! -f "$rulesets_file" ]; then
+        error "Rulesets file not found: $rulesets_file"
+        return 1
+    fi
+
+    info "Applying branch protection rulesets..."
+
+    # Get repository name with owner
+    local repo_full_name
+    if ! repo_full_name=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null); then
+        error "Failed to get repository name"
+        return 1
+    fi
+
+    # Apply Main branch ruleset
+    info "Creating ruleset for Main branch..."
+    local main_ruleset=$(jq -c '.main' "$rulesets_file")
+    if echo "$main_ruleset" | gh api "repos/$repo_full_name/rulesets" --method POST --input - >/dev/null 2>&1; then
+        log "✓ Main branch ruleset applied"
+    else
+        warning "Failed to apply Main branch ruleset (may already exist)"
+    fi
+
+    # Apply Dev branch ruleset
+    info "Creating ruleset for Dev branch..."
+    local dev_ruleset=$(jq -c '.dev' "$rulesets_file")
+    if echo "$dev_ruleset" | gh api "repos/$repo_full_name/rulesets" --method POST --input - >/dev/null 2>&1; then
+        log "✓ Dev branch ruleset applied"
+    else
+        warning "Failed to apply Dev branch ruleset (may already exist)"
+    fi
+
+    log "Branch protection rulesets configured"
+}
+
 execute_command() {
     # Check dependencies
     check_command_dependencies "repo" || return 1
@@ -89,6 +130,7 @@ execute_command() {
     local add_extensions=false
     local add_claude=false
     local add_apple=false
+    local add_rules=false
     local suffix=""
     local visibility="private"
     local description=""
@@ -116,6 +158,10 @@ execute_command() {
             --suffix)
                 suffix="$2"
                 shift 2
+                ;;
+            --rules)
+                add_rules=true
+                shift
                 ;;
             --public)
                 visibility="public"
@@ -221,6 +267,11 @@ execute_command() {
         add_secret "MATCH_REPOSITORY${secret_suffix}" "op://dev/fastlane/MATCH_REPOSITORY${secret_suffix}" || return 1
         add_secret "MATCH_PASSWORD${secret_suffix}" "op://dev/fastlane/MATCH_PASSWORD${secret_suffix}" || return 1
         #add_secret "GH_PAT" "op://dev/github/GH_PAT" || return 1
+    fi
+
+    # Apply branch protection rulesets if requested
+    if [ "$add_rules" = true ]; then
+        apply_rulesets || return 1
     fi
 
     log "Repository initialization complete!"

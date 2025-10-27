@@ -139,8 +139,11 @@ jd repo --extensions
 # Initialize with Claude Code OAuth token
 jd repo --claude
 
-# Initialize with all secrets
-jd repo --npm --extensions --claude
+# Initialize with branch protection rulesets
+jd repo --rules
+
+# Initialize with all secrets and rulesets
+jd repo --npm --extensions --claude --rules
 
 # Create public repository
 jd repo --public
@@ -171,6 +174,12 @@ The repo command integrates with 1Password CLI to securely add GitHub secrets:
 **With `--claude` flag:**
 
 - `CLAUDE_CODE_OAUTH_TOKEN` - Claude Code OAuth token
+
+**With `--rules` flag:**
+
+- Applies branch protection rulesets for `main` and `dev` branches
+- `main` branch: Prevents deletion, force pushes, and requires pull requests (merge/rebase allowed)
+- `dev` branch: Prevents deletion and force pushes
 
 Secret references in 1Password:
 
@@ -372,6 +381,8 @@ jd/
 │   ├── venv.sh              # Python virtual environment command
 │   ├── requirements.sh      # Python requirements generator
 │   └── claude-github.sh     # Claude Code OAuth token updater
+├── data/
+│   └── rulesets.json        # Branch protection ruleset definitions
 ├── utils/
 │   ├── common.sh            # Common utilities
 │   └── dependency-check.sh # Dependency management

@@ -112,16 +112,27 @@ jd <command> [args]
    - The options parsing case statement to handle the new flag
    - The execution logic to use the new flag
 
-2. **`completions/jd.bash`** - Add new flag to the command's options list in the case statement
+2. **`README.md`** - Update:
+   - The command's usage examples to show the new flag
+   - Add explanation of what the flag does in the appropriate section
+   - Update any relevant workflow descriptions
 
-3. **`completions/jd.zsh`** - Add new flag with description to the command's `_arguments` list
+3. **`docs/index.html`** - Update:
+   - The command's usage line in the `command-usage` div to include the new flag
+   - Add a new `<li>` item in the `args-list` with `arg-name` and `arg-desc` for the flag
 
-**Example: Adding `--apple` and `--suffix` flags to the `repo` command requires updating:**
+4. **`completions/jd.bash`** - Add new flag to the command's options list in the case statement
+
+5. **`completions/jd.zsh`** - Add new flag with description to the command's `_arguments` list
+
+**Example: Adding `--rules` flag to the `repo` command requires updating:**
 - `commands/repo.sh` (help text, parsing, logic)
+- `README.md` (usage examples, flag explanation)
+- `docs/index.html` (command usage line, args list)
 - `completions/jd.bash` (add to `repo_opts`)
 - `completions/jd.zsh` (add to `repo` case's `_arguments`)
 
-**Failing to update completion scripts will result in incomplete tab completion functionality.**
+**Failing to update ALL documentation files (README.md, docs/index.html) and completion scripts will result in an incomplete implementation.**
 
 ### Publishing New Versions
 
