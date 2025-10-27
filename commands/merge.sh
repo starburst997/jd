@@ -198,10 +198,16 @@ execute_command() {
     if [ -z "$1" ] || [ "$1" != "--branch" ]; then
         info "Updating local repository..."
 
-        # Fetch latest changes
-        if ! git fetch origin 2>/dev/null; then
-            warning "Failed to fetch from origin"
-            return 0
+        # Fetch latest changes and update local default branch to match origin
+        if ! git fetch origin "$default_branch:$default_branch" 2>/dev/null; then
+            # If fast-forward fails, try regular fetch
+            if ! git fetch origin 2>/dev/null; then
+                warning "Failed to fetch from origin"
+                return 0
+            fi
+            debug "Fetched from origin (local branch may have diverged)"
+        else
+            debug "Updated local $default_branch to match origin/$default_branch"
         fi
 
         # Try to switch to default branch
@@ -228,21 +234,34 @@ execute_command() {
                 return 1
             fi
         else
-            # Default branch is not checked out elsewhere, switch to it
+            # Default branch is not checked out elsewhere, try to switch to it
             if git checkout "$default_branch" 2>/dev/null; then
-                # Pull latest changes
-                if git pull origin "$default_branch" 2>/dev/null; then
-                    log "Switched to $default_branch and updated"
+                log "Switched to $default_branch (updated to latest)"
 
-                    # Cleanup old temp branches
-                    cleanup_temp_branches "$default_branch"
-                else
-                    warning "Switched to $default_branch but failed to pull latest changes"
-                    info "You may have uncommitted changes"
-                fi
+                # Cleanup old temp branches
+                cleanup_temp_branches "$default_branch"
             else
-                warning "Failed to switch to $default_branch"
-                info "You may have uncommitted changes"
+                # Checkout failed (likely uncommitted changes), create temp branch instead
+                warning "Failed to switch to $default_branch (may have uncommitted changes)"
+
+                local temp_branch=$(get_next_temp_branch "$default_branch")
+                info "Creating temporary branch: $temp_branch"
+
+                if git branch "$temp_branch" "origin/$default_branch" 2>/dev/null; then
+                    if git checkout "$temp_branch" 2>/dev/null; then
+                        log "Switched to temporary branch: $temp_branch"
+                        info "Based on latest origin/$default_branch"
+
+                        # Cleanup old temp branches
+                        cleanup_temp_branches "$default_branch"
+                    else
+                        error "Failed to checkout temporary branch"
+                        return 1
+                    fi
+                else
+                    error "Failed to create temporary branch"
+                    return 1
+                fi
             fi
         fi
     fi
