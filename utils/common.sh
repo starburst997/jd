@@ -80,7 +80,17 @@ get_current_branch() {
 # Get default branch (main/master)
 get_default_branch() {
     local default_branch
-    # Try to get from git config
+
+    # Try to get from GitHub using gh CLI (most accurate)
+    if command_exists gh; then
+        default_branch=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null)
+        if [ -n "$default_branch" ]; then
+            echo "$default_branch"
+            return 0
+        fi
+    fi
+
+    # Fallback: Try to get from git config
     default_branch=$(git config --get init.defaultBranch 2>/dev/null)
     if [ -z "$default_branch" ]; then
         # Check if main exists

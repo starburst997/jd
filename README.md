@@ -96,11 +96,23 @@ jd dev --list
 ### Create GitHub Pull Request
 
 ```bash
-# Create PR with smart defaults
+# Create PR with AI-generated title and description
 jd pr
 
-# Create draft PR
+# Create draft PR with AI generation
 jd pr --draft
+
+# Create PR with custom title (AI generates description)
+jd pr --title "Add new feature"
+
+# Disable AI generation, use fallback
+jd pr --no-claude
+
+# Use Haiku model for faster generation
+jd pr --model haiku
+
+# Use Opus model for higher quality
+jd pr --model opus
 
 # Create PR with custom base branch
 jd pr --base develop
@@ -111,18 +123,21 @@ jd pr --web
 # Create PR with reviewers
 jd pr --reviewers user1,user2
 
-# Full example
-jd pr --title "Add new feature" --draft --reviewers teammate --labels enhancement
+# Full example with custom title and body (no AI)
+jd pr --title "Add new feature" --body "Custom description" --draft --reviewers teammate --labels enhancement
 ```
 
 Smart PR features:
 
-- Auto-generates title from branch name or recent commits
-- Creates PR body from commit history
+- **AI-powered title and description generation** using Claude CLI (enabled by default)
+- Supports multiple Claude models: `sonnet` (default), `haiku`, `opus`
+- Auto-generates title from branch name or recent commits (fallback)
+- Creates PR body from commit history (fallback)
 - Detects WIP/Draft branches
 - Uses repository PR templates if available
 - Auto-assigns yourself
 - Offers to push changes if needed
+- Custom title/body override AI generation
 
 ### Initialize GitHub Repository with Secrets
 

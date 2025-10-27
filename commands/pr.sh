@@ -9,8 +9,8 @@ Create GitHub pull request with smart defaults
 Usage: jd pr [OPTIONS]
 
 Options:
-    --title TITLE     PR title (defaults to branch name)
-    --body BODY       PR body/description
+    --title TITLE     PR title (defaults to AI-generated or branch name)
+    --body BODY       PR body/description (defaults to AI-generated)
     --base BRANCH     Base branch (defaults to main/master)
     --head BRANCH     Head branch (defaults to current branch)
     --draft           Create as draft PR
@@ -21,23 +21,113 @@ Options:
     --milestone ID    Milestone ID or title
     --no-maintainer   Disable maintainer edits
     --template FILE   Use PR template file
+    --no-claude       Disable Claude AI generation (use fallback generation)
+    --model MODEL     Claude model to use: sonnet (default), haiku, or opus
     -h, --help        Show this help message
 
 Smart Features:
-    - Auto-detects conventional commit format for title
-    - Uses recent commit messages for PR body if not specified
+    - AI-powered title and description generation using Claude CLI
+    - Auto-detects conventional commit format for title (fallback)
+    - Uses recent commit messages for PR body if not specified (fallback)
     - Detects WIP/Draft indicators in branch name
     - Auto-assigns yourself if no assignees specified
     - Uses repository's default PR template if exists
 
 Examples:
-    jd pr                                    # Create PR with smart defaults
-    jd pr --draft                           # Create draft PR
-    jd pr --title "Add feature" --web      # Custom title and open in browser
+    jd pr                                    # Create PR with AI-generated content
+    jd pr --draft                           # Create draft PR with AI generation
+    jd pr --title "Add feature"             # Custom title, AI-generated body
+    jd pr --no-claude                       # Disable AI, use fallback generation
+    jd pr --model haiku                     # Use Haiku model for faster generation
+    jd pr --title "Fix bug" --body "..."   # Custom title and body (no AI)
     jd pr --reviewers user1,user2          # Request reviews
     jd pr --base develop                   # PR against develop branch
 
 EOF
+}
+
+# Generate PR title and body using Claude CLI
+generate_with_claude() {
+    local base_branch="$1"
+    local head_branch="$2"
+    local model="$3"
+    local generate_title="$4"  # true/false
+    local custom_title="$5"     # empty or custom title
+
+    # Get git information (only committed changes)
+    local commits=$(git log --oneline "$base_branch..$head_branch" 2>/dev/null)
+    local changes=$(git diff "$base_branch...$head_branch" --stat 2>/dev/null)
+    local diff=$(git diff "$base_branch...$head_branch" 2>/dev/null | head -n 500)
+
+    # Claude CLI accepts simple aliases: sonnet, haiku, opus
+    # These automatically use the latest versions
+    local model_id="$model"
+
+    local prompt=""
+
+    if [ "$generate_title" = true ]; then
+        # Generate both title and description
+        prompt="Based on the following git diff and commits, generate a concise PR title and description.
+
+Respond with the following format:
+TITLE: [Your generated title here]
+
+DESCRIPTION:
+[Your generated description here in markdown format]
+
+Include a summary section explaining what was changed and why, and a test plan section with specific things to test. Keep it concise and professional.
+
+Commits:
+$commits
+
+Changes summary:
+$changes
+
+Here's a sample of the actual diff (truncated if too long):
+$diff"
+    else
+        # Generate only description with custom title
+        prompt="Based on the following git diff and commits, generate a concise PR description for a pull request titled '$custom_title'. Include a summary section explaining what was changed and why, and a test plan section with specific things to test. Keep it concise and professional.
+
+Commits:
+$commits
+
+Changes summary:
+$changes
+
+Here's a sample of the actual diff (truncated if too long):
+$diff
+
+Format the response as markdown suitable for a GitHub PR description."
+    fi
+
+    # Try to use Claude CLI
+    if command -v claude &> /dev/null; then
+        debug "Generating with Claude using model: $model_id"
+        local claude_response
+        claude_response=$(echo "$prompt" | claude --model "$model_id" 2>/dev/null)
+
+        if [ -n "$claude_response" ]; then
+            if [ "$generate_title" = true ]; then
+                # Extract title and description
+                local generated_title=$(echo "$claude_response" | grep "^TITLE:" | sed 's/^TITLE: //')
+                local generated_body=$(echo "$claude_response" | sed -n '/^DESCRIPTION:/,$ p' | sed '1d')
+
+                if [ -n "$generated_title" ] && [ -n "$generated_body" ]; then
+                    echo "TITLE:$generated_title"
+                    echo "BODY:$generated_body"
+                    return 0
+                fi
+            else
+                # Only body was generated
+                echo "BODY:$claude_response"
+                return 0
+            fi
+        fi
+    fi
+
+    # Return failure if Claude generation didn't work
+    return 1
 }
 
 # Generate PR title from branch name or commits
@@ -143,6 +233,8 @@ execute_command() {
     local milestone=""
     local no_maintainer=false
     local template_file=""
+    local use_claude=true
+    local claude_model="sonnet"
 
     # Parse options
     while [[ $# -gt 0 ]]; do
@@ -193,6 +285,19 @@ execute_command() {
                 ;;
             --template)
                 template_file="$2"
+                shift 2
+                ;;
+            --no-claude)
+                use_claude=false
+                shift
+                ;;
+            --model)
+                claude_model="$2"
+                # Validate model
+                if [[ ! "$claude_model" =~ ^(sonnet|haiku|opus)$ ]]; then
+                    error "Invalid model: $claude_model (must be: sonnet, haiku, or opus)"
+                    return 1
+                fi
                 shift 2
                 ;;
             -h|--help)
@@ -246,37 +351,78 @@ execute_command() {
         draft=true
     fi
 
-    # Generate title if not provided
-    [ -z "$title" ] && title=$(generate_pr_title "$head_branch")
+    # Try to generate with Claude if enabled and not all fields provided
+    local claude_generated=false
+    if [ "$use_claude" = true ] && { [ -z "$title" ] || [ -z "$body" ]; }; then
+        info "Generating PR content with Claude ($claude_model)..."
 
-    # Generate body if not provided
-    [ -z "$body" ] && body=$(generate_pr_body "$base_branch" "$head_branch" "$template_file")
+        local generate_title_flag=false
+        local title_for_claude=""
+
+        # Determine what to generate
+        if [ -z "$title" ] && [ -z "$body" ]; then
+            # Generate both title and body
+            generate_title_flag=true
+        elif [ -z "$body" ] && [ -n "$title" ]; then
+            # Generate only body with custom title
+            generate_title_flag=false
+            title_for_claude="$title"
+        fi
+
+        # Call Claude generation
+        local claude_output
+        if claude_output=$(generate_with_claude "$base_branch" "$head_branch" "$claude_model" "$generate_title_flag" "$title_for_claude"); then
+            claude_generated=true
+
+            # Parse the output
+            if [ "$generate_title_flag" = true ]; then
+                title=$(echo "$claude_output" | grep "^TITLE:" | sed 's/^TITLE://')
+                body=$(echo "$claude_output" | sed -n '/^BODY:/,$ p' | sed 's/^BODY://')
+            else
+                body=$(echo "$claude_output" | sed 's/^BODY://')
+            fi
+
+            debug "Claude generation successful"
+        else
+            warning "Claude generation failed, falling back to default generation"
+        fi
+    fi
+
+    # Fallback to default generation if not using Claude or Claude failed
+    if [ -z "$title" ]; then
+        title=$(generate_pr_title "$head_branch")
+    fi
+
+    if [ -z "$body" ]; then
+        body=$(generate_pr_body "$base_branch" "$head_branch" "$template_file")
+    fi
 
     # Auto-assign self if no assignees
     if [ -z "$assignees" ]; then
         assignees="@me"
     fi
 
-    # Build gh pr create command
-    local gh_cmd="gh pr create"
-    gh_cmd+=" --title \"$title\""
-    gh_cmd+=" --body \"$body\""
-    gh_cmd+=" --base \"$base_branch\""
-    gh_cmd+=" --head \"$head_branch\""
-
-    [ "$draft" = true ] && gh_cmd+=" --draft"
-    [ -n "$reviewers" ] && gh_cmd+=" --reviewer \"$reviewers\""
-    [ -n "$assignees" ] && gh_cmd+=" --assignee \"$assignees\""
-    [ -n "$labels" ] && gh_cmd+=" --label \"$labels\""
-    [ -n "$milestone" ] && gh_cmd+=" --milestone \"$milestone\""
-    [ "$no_maintainer" = true ] && gh_cmd+=" --no-maintainer-edit"
-    [ "$open_web" = true ] && gh_cmd+=" --web"
-
-    # Create PR
+    # Create PR - call gh directly to avoid eval issues with multiline body
     info "Creating pull request..."
-    debug "Command: $gh_cmd"
 
-    if eval "$gh_cmd"; then
+    # Build arguments array
+    local gh_args=(
+        "pr" "create"
+        "--title" "$title"
+        "--body" "$body"
+        "--base" "$base_branch"
+        "--head" "$head_branch"
+    )
+
+    [ "$draft" = true ] && gh_args+=("--draft")
+    [ -n "$reviewers" ] && gh_args+=("--reviewer" "$reviewers")
+    [ -n "$assignees" ] && gh_args+=("--assignee" "$assignees")
+    [ -n "$labels" ] && gh_args+=("--label" "$labels")
+    [ -n "$milestone" ] && gh_args+=("--milestone" "$milestone")
+    [ "$no_maintainer" = true ] && gh_args+=("--no-maintainer-edit")
+    [ "$open_web" = true ] && gh_args+=("--web")
+
+    if gh "${gh_args[@]}"; then
         log "Pull request created successfully"
 
         # Show PR URL if not opening in web

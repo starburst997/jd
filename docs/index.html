@@ -488,11 +488,11 @@
           <div class="command-card">
             <div class="command-name">jd pr</div>
             <div class="command-desc">
-              Create GitHub pull requests with smart defaults
+              Create GitHub pull requests with AI-generated title and description
             </div>
             <div class="command-usage">
-              jd pr [--draft] [--base BRANCH] [--web] [--title TITLE]
-              [--reviewers USERS] [--labels LABELS]
+              jd pr [--draft] [--base BRANCH] [--web] [--title TITLE] [--body BODY]
+              [--no-claude] [--model MODEL] [--reviewers USERS] [--labels LABELS]
             </div>
             <ul class="args-list">
               <li>
@@ -511,7 +511,19 @@
               </li>
               <li>
                 <span class="arg-name">--title TITLE</span>
-                <span class="arg-desc">Custom PR title</span>
+                <span class="arg-desc">Custom PR title (AI generates description if not provided)</span>
+              </li>
+              <li>
+                <span class="arg-name">--body BODY</span>
+                <span class="arg-desc">Custom PR body/description</span>
+              </li>
+              <li>
+                <span class="arg-name">--no-claude</span>
+                <span class="arg-desc">Disable Claude AI generation (use fallback)</span>
+              </li>
+              <li>
+                <span class="arg-name">--model MODEL</span>
+                <span class="arg-desc">Claude model: sonnet (default), haiku, or opus</span>
               </li>
               <li>
                 <span class="arg-name">--reviewers USERS</span>

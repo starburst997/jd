@@ -40,7 +40,7 @@ _jd() {
             case $words[1] in
                 pr)
                     _arguments \
-                        '--title[PR title]:title:' \
+                        '--title[PR title (AI generates description if not provided)]:title:' \
                         '--body[PR body]:body:' \
                         '--base[Base branch]:branch:' \
                         '--head[Head branch]:branch:' \
@@ -52,6 +52,8 @@ _jd() {
                         '--milestone[Milestone ID or title]:milestone:' \
                         '--no-maintainer[Disable maintainer edits]' \
                         '--template[Use PR template file]:file:_files' \
+                        '--no-claude[Disable Claude AI generation (use fallback)]' \
+                        '--model[Claude model to use]:model:(sonnet haiku opus)' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
                 dev)
