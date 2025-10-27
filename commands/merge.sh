@@ -21,6 +21,12 @@ Features:
     - Switches to updated default branch
     - Worktree-aware: creates temp branch if default branch is checked out elsewhere
     - Auto-cleanup of old temp branches
+    - Special case: merging default branch (e.g., dev) to main is supported
+
+Behavior:
+    - On feature branch: Merges PR to default branch (e.g., feature → dev)
+    - On default branch (not main): Merges PR to main (e.g., dev → main)
+    - On main branch: Error (cannot merge main to itself)
 
 Examples:
     jd merge                        # Squash merge PR for current branch
@@ -28,6 +34,13 @@ Examples:
     jd merge --type rebase          # Rebase merge PR for current branch
     jd merge --branch feature-x     # Squash merge PR for specific branch
     jd merge --clean                # Only cleanup old temp branches
+
+Workflow Examples:
+    # On feature branch "feature-x" with default branch "dev"
+    jd merge                        # Merges feature-x → dev
+
+    # On default branch "dev" (not main)
+    jd merge                        # Merges dev → main
 
 EOF
 }
@@ -202,10 +215,19 @@ execute_command() {
         return 1
     fi
 
-    # Don't allow merging default branch
+    # Special case: if on default branch, merge TO main
+    local target_branch=""
     if [ "$branch" = "$default_branch" ]; then
-        error "Cannot merge the default branch ($default_branch)"
-        return 1
+        # If default branch IS main, error out
+        if [ "$default_branch" = "main" ]; then
+            error "Cannot merge main branch (it's the default branch)"
+            info "Switch to a feature branch first"
+            return 1
+        fi
+
+        # Otherwise, we're merging default branch (e.g., dev) TO main
+        target_branch="main"
+        info "Merging from default branch ($default_branch) to main"
     fi
 
     # Check for uncommitted changes
@@ -227,11 +249,23 @@ execute_command() {
     info "Looking for PR for branch: $branch"
 
     # Find PR for this branch
-    local pr_number=$(gh pr list --head "$branch" --json number --jq '.[0].number' 2>/dev/null)
+    local pr_number
+    if [ -n "$target_branch" ]; then
+        # When merging default to main, filter by both head and base branch
+        pr_number=$(gh pr list --head "$branch" --base "$target_branch" --json number --jq '.[0].number' 2>/dev/null)
+    else
+        # Normal case: find PR from current branch to default branch
+        pr_number=$(gh pr list --head "$branch" --json number --jq '.[0].number' 2>/dev/null)
+    fi
 
     if [ -z "$pr_number" ]; then
-        error "No open PR found for branch: $branch"
-        info "Create a PR first with: jd pr"
+        if [ -n "$target_branch" ]; then
+            error "No open PR found from $branch to $target_branch"
+            info "Create a PR first with: jd pr --base $target_branch"
+        else
+            error "No open PR found for branch: $branch"
+            info "Create a PR first with: jd pr"
+        fi
         return 1
     fi
 
