@@ -10,6 +10,7 @@ Usage: jd merge [OPTIONS]
 
 Options:
     --branch BRANCH   Branch name to find PR for (defaults to current branch)
+    --type TYPE       Merge type: squash, merge, or rebase (defaults to squash)
     --clean           Only cleanup temp branches (no merge)
     -h, --help        Show this help message
 
@@ -22,9 +23,11 @@ Features:
     - Auto-cleanup of old temp branches
 
 Examples:
-    jd merge                     # Merge PR for current branch
-    jd merge --branch feature-x  # Merge PR for specific branch
-    jd merge --clean            # Only cleanup old temp branches
+    jd merge                        # Squash merge PR for current branch
+    jd merge --type merge           # Regular merge PR for current branch
+    jd merge --type rebase          # Rebase merge PR for current branch
+    jd merge --branch feature-x     # Squash merge PR for specific branch
+    jd merge --clean                # Only cleanup old temp branches
 
 EOF
 }
@@ -146,6 +149,7 @@ execute_command() {
 
     # Default values
     local branch=""
+    local merge_type="squash"
     local clean_only=false
 
     # Parse options
@@ -153,6 +157,15 @@ execute_command() {
         case $1 in
             --branch)
                 branch="$2"
+                shift 2
+                ;;
+            --type)
+                merge_type="$2"
+                # Validate merge type
+                if [[ ! "$merge_type" =~ ^(squash|merge|rebase)$ ]]; then
+                    error "Invalid merge type: $merge_type (must be: squash, merge, or rebase)"
+                    return 1
+                fi
                 shift 2
                 ;;
             --clean)
@@ -213,8 +226,8 @@ execute_command() {
     info "PR: $pr_title"
 
     # Merge the PR
-    info "Merging PR #$pr_number..."
-    if ! gh pr merge "$pr_number" --merge --delete-branch 2>/dev/null; then
+    info "Merging PR #$pr_number (type: $merge_type)..."
+    if ! gh pr merge "$pr_number" "--$merge_type" --delete-branch 2>/dev/null; then
         error "Failed to merge PR #$pr_number"
         info "You may need to resolve conflicts or check PR status"
         return 1

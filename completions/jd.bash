@@ -33,8 +33,13 @@ _jd_completions() {
             fi
             ;;
         merge)
-            local merge_opts="--branch --clean -h --help"
-            COMPREPLY=( $(compgen -W "${merge_opts}" -- ${cur}) )
+            local merge_opts="--branch --type --clean -h --help"
+            # If previous word was --type, suggest merge type options
+            if [ "$prev" = "--type" ]; then
+                COMPREPLY=( $(compgen -W "squash merge rebase" -- ${cur}) )
+            else
+                COMPREPLY=( $(compgen -W "${merge_opts}" -- ${cur}) )
+            fi
             ;;
         dev)
             local dev_opts="--list --force -h --help"

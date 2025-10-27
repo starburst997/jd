@@ -540,15 +540,19 @@
           <div class="command-card">
             <div class="command-name">jd merge</div>
             <div class="command-desc">
-              Merge GitHub pull request and cleanup branches with worktree support
+              Merge GitHub pull request and cleanup branches with worktree support (squash by default)
             </div>
             <div class="command-usage">
-              jd merge [--branch BRANCH] [--clean]
+              jd merge [--branch BRANCH] [--type TYPE] [--clean]
             </div>
             <ul class="args-list">
               <li>
                 <span class="arg-name">--branch BRANCH</span>
                 <span class="arg-desc">Branch name to find PR for (defaults to current branch)</span>
+              </li>
+              <li>
+                <span class="arg-name">--type TYPE</span>
+                <span class="arg-desc">Merge type: squash (default), merge, or rebase</span>
               </li>
               <li>
                 <span class="arg-name">--clean</span>

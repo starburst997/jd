@@ -60,6 +60,7 @@ _jd() {
                 merge)
                     _arguments \
                         '--branch[Branch name to find PR for]:branch:' \
+                        '--type[Merge type]:type:(squash merge rebase)' \
                         '--clean[Only cleanup old temporary branches]' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;

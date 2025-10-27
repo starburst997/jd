@@ -143,11 +143,20 @@ Smart PR features:
 ### Merge GitHub Pull Request
 
 ```bash
-# Merge PR for current branch
+# Squash merge PR for current branch (default)
 jd merge
+
+# Regular merge PR for current branch
+jd merge --type merge
+
+# Rebase merge PR for current branch
+jd merge --type rebase
 
 # Merge PR for specific branch
 jd merge --branch feature-x
+
+# Specify merge type for specific branch
+jd merge --branch feature-x --type merge
 
 # Only cleanup old temporary branches
 jd merge --clean
@@ -156,6 +165,7 @@ jd merge --clean
 Smart merge features:
 
 - **Auto-detects PR** for current branch using GitHub CLI
+- **Squash merge by default** - can be customized with `--type` flag (squash, merge, or rebase)
 - **Merges and deletes** remote branch automatically
 - **Fetches latest** changes from origin after merge
 - **Switches to default branch** and pulls latest changes
