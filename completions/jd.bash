@@ -13,7 +13,7 @@ _jd_completions() {
     local global_opts="-v --verbose -h --help --version"
 
     # All available commands
-    commands="dev pr repo npm venv requirements claude-github init update completion help"
+    commands="dev pr merge repo npm venv requirements claude-github init update completion help"
 
     # Complete first argument (command or global option)
     if [ $COMP_CWORD -eq 1 ]; then
@@ -31,6 +31,10 @@ _jd_completions() {
             else
                 COMPREPLY=( $(compgen -W "${pr_opts}" -- ${cur}) )
             fi
+            ;;
+        merge)
+            local merge_opts="--branch --clean -h --help"
+            COMPREPLY=( $(compgen -W "${merge_opts}" -- ${cur}) )
             ;;
         dev)
             local dev_opts="--list --force -h --help"

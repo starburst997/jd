@@ -9,6 +9,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 - **`jd init`** - Setup and install CLI dependencies (optional first-time setup)
 - **`jd dev`** - Apply devcontainer templates to projects with a single command
 - **`jd pr`** - Create GitHub pull requests with smart defaults
+- **`jd merge`** - Merge GitHub pull requests and cleanup branches with worktree support
 - **`jd repo`** - Initialize GitHub repository and configure secrets from 1Password
 - **`jd npm`** - Setup npm package with OIDC trusted publishing
 - **`jd update`** - Self-update to latest version
@@ -138,6 +139,39 @@ Smart PR features:
 - Auto-assigns yourself
 - Offers to push changes if needed
 - Custom title/body override AI generation
+
+### Merge GitHub Pull Request
+
+```bash
+# Merge PR for current branch
+jd merge
+
+# Merge PR for specific branch
+jd merge --branch feature-x
+
+# Only cleanup old temporary branches
+jd merge --clean
+```
+
+Smart merge features:
+
+- **Auto-detects PR** for current branch using GitHub CLI
+- **Merges and deletes** remote branch automatically
+- **Fetches latest** changes from origin after merge
+- **Switches to default branch** and pulls latest changes
+- **Worktree-aware** - creates temporary branch if default branch is checked out elsewhere
+- **Auto-cleanup** - removes old temporary branches not in use
+- **Handles uncommitted changes** gracefully
+
+Worktree workflow:
+1. When default branch is checked out in another worktree:
+   - Creates unique temp branch (e.g., `main-temp-1`) based on latest `origin/main`
+   - Switches to temp branch automatically
+   - Cleans up old unused temp branches
+2. When default branch is available:
+   - Switches to default branch
+   - Pulls latest changes
+   - Cleans up temp branches
 
 ### Initialize GitHub Repository with Secrets
 

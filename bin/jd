@@ -28,6 +28,7 @@ Usage: jd [OPTIONS] COMMAND [ARGS...]
 Commands:
     dev [template]    Apply devcontainer template to current project
     pr [options]      Create GitHub pull request with defaults
+    merge [options]   Merge GitHub pull request and cleanup branches
     repo [options]    Initialize GitHub repository and configure secrets
     npm               Setup npm package with OIDC trusted publishing
     venv              Create or activate Python virtual environment
@@ -48,6 +49,8 @@ Examples:
     jd dev python             # Apply python template
     jd pr --draft            # Create draft PR
     jd pr --base develop     # Create PR against develop branch
+    jd merge                  # Merge PR for current branch and update local repo
+    jd merge --clean         # Cleanup old temporary branches
     jd repo --rules          # Initialize repo with branch protection rulesets
     jd claude-github         # Update Claude OAuth token everywhere
 

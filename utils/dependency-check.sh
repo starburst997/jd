@@ -254,7 +254,7 @@ check_command_dependencies() {
     fi
 
     case "$cmd" in
-        pr)
+        pr|merge)
             check_gh_cli || return 1
             ;;
         dev)

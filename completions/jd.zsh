@@ -13,6 +13,7 @@ _jd() {
     commands=(
         'dev:Apply devcontainer template to current project'
         'pr:Create GitHub pull request with defaults'
+        'merge:Merge GitHub pull request and cleanup branches'
         'repo:Initialize GitHub repository and configure secrets'
         'npm:Setup npm package with OIDC trusted publishing'
         'venv:Create or activate Python virtual environment'
@@ -54,6 +55,12 @@ _jd() {
                         '--template[Use PR template file]:file:_files' \
                         '--no-claude[Disable Claude AI generation (use fallback)]' \
                         '--model[Claude model to use]:model:(sonnet haiku opus)' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                merge)
+                    _arguments \
+                        '--branch[Branch name to find PR for]:branch:' \
+                        '--clean[Only cleanup old temporary branches]' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
                 dev)
