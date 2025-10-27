@@ -61,6 +61,33 @@
         text-align: center;
       }
 
+      .ascii-logo {
+        font-family: monospace;
+        font-size: 1.5rem;
+        line-height: 1;
+        margin-bottom: 3rem;
+        white-space: pre;
+        display: inline-block;
+        text-align: left;
+        transform: scaleY(1.20);
+        transform-origin: center;
+      }
+
+      .ascii-logo .line1 { color: #17bbdd; }
+      .ascii-logo .line2 { color: #17bbdd; }
+      .ascii-logo .line3 { color: rgb(40, 198, 209); }
+      .ascii-logo .line4 { color: rgb(69, 204, 180); }
+      .ascii-logo .line5 { color: rgb(114, 207, 154); }
+      .ascii-logo .line6 { color: #98d280; }
+      .ascii-logo .subtitle {
+        color: #96969d;
+        opacity: 0.7;
+        font-size: 0.9rem;
+        display: block;
+        text-align: right;
+        transform: scaleY(0.833);
+      }
+
       h1 {
         font-size: 3.5rem;
         font-weight: 700;
@@ -291,6 +318,10 @@
       }
 
       @media (max-width: 768px) {
+        .ascii-logo {
+          font-size: 1rem;
+        }
+
         h1 {
           font-size: 2.5rem;
         }
@@ -334,7 +365,13 @@
 
     <section class="hero">
       <div class="container">
-        <h1>jd CLI</h1>
+        <div class="ascii-logo"><span class="line1">     ██╗██████╗ </span>
+<span class="line2">     ██║██╔══██╗</span>
+<span class="line3">     ██║██║  ██║</span>
+<span class="line4">██   ██║██║  ██║</span>
+<span class="line5">╚█████╔╝██████╔╝</span>
+<span class="line6"> ╚════╝ ╚═════╝ </span>
+<span class="subtitle">   Personal Dev Toolkit</span></div>
         <p class="tagline">
           Personal development toolkit for streamlined workflows with automated
           dependency management
