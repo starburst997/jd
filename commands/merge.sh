@@ -73,6 +73,7 @@ get_unused_temp_branches() {
 # Cleanup unused temp branches
 cleanup_temp_branches() {
     local base_branch="$1"
+    local exclude_branch="$2"  # Optional: branch to exclude from cleanup
 
     info "Cleaning up unused temp branches..."
 
@@ -86,6 +87,13 @@ cleanup_temp_branches() {
     local count=0
     while IFS= read -r branch; do
         [ -z "$branch" ] && continue
+
+        # Skip the excluded branch (e.g., newly created temp branch)
+        if [ -n "$exclude_branch" ] && [ "$branch" = "$exclude_branch" ]; then
+            debug "Skipping newly created branch: $branch"
+            continue
+        fi
+
         info "Deleting branch: $branch"
         if git branch -D "$branch" &>/dev/null; then
             count=$((count + 1))
@@ -103,10 +111,30 @@ is_worktree() {
     [[ "$git_dir" == *".git/worktrees/"* ]]
 }
 
-# Check if a branch is checked out in any worktree
-is_branch_checked_out() {
+# Check if a branch is checked out in any worktree OTHER than the main worktree
+is_branch_checked_out_elsewhere() {
     local branch="$1"
-    git worktree list --porcelain | grep -q "^branch refs/heads/${branch}$"
+    local current_branch=$(get_current_branch)
+
+    # If we're on the branch, it's not checked out "elsewhere"
+    if [ "$current_branch" = "$branch" ]; then
+        return 1
+    fi
+
+    # Count how many worktrees exist
+    local worktree_count=$(git worktree list --porcelain 2>/dev/null | grep -c "^worktree ")
+
+    # If only 1 worktree exists (the main one), no branch can be checked out "elsewhere"
+    if [ "$worktree_count" -le 1 ]; then
+        return 1
+    fi
+
+    # Multiple worktrees exist - check if branch is checked out in any of them
+    if git worktree list --porcelain 2>/dev/null | grep -q "^branch refs/heads/${branch}$"; then
+        return 0
+    fi
+
+    return 1
 }
 
 execute_command() {
@@ -211,20 +239,20 @@ execute_command() {
         fi
 
         # Try to switch to default branch
-        if is_branch_checked_out "$default_branch"; then
+        if is_branch_checked_out_elsewhere "$default_branch"; then
             warning "Default branch '$default_branch' is checked out in another worktree"
 
-            # Create temp branch based on latest origin default branch
+            # Create temp branch based on latest origin default branch (no tracking)
             local temp_branch=$(get_next_temp_branch "$default_branch")
             info "Creating temporary branch: $temp_branch"
 
-            if git branch "$temp_branch" "origin/$default_branch" 2>/dev/null; then
+            if git branch --no-track "$temp_branch" "origin/$default_branch" 2>/dev/null; then
                 if git checkout "$temp_branch" 2>/dev/null; then
                     log "Switched to temporary branch: $temp_branch"
                     info "Based on latest origin/$default_branch"
 
-                    # Cleanup old temp branches
-                    cleanup_temp_branches "$default_branch"
+                    # Cleanup old temp branches (excluding the one we just created)
+                    cleanup_temp_branches "$default_branch" "$temp_branch"
                 else
                     error "Failed to checkout temporary branch"
                     return 1
@@ -247,13 +275,13 @@ execute_command() {
                 local temp_branch=$(get_next_temp_branch "$default_branch")
                 info "Creating temporary branch: $temp_branch"
 
-                if git branch "$temp_branch" "origin/$default_branch" 2>/dev/null; then
+                if git branch --no-track "$temp_branch" "origin/$default_branch" 2>/dev/null; then
                     if git checkout "$temp_branch" 2>/dev/null; then
                         log "Switched to temporary branch: $temp_branch"
                         info "Based on latest origin/$default_branch"
 
-                        # Cleanup old temp branches
-                        cleanup_temp_branches "$default_branch"
+                        # Cleanup old temp branches (excluding the one we just created)
+                        cleanup_temp_branches "$default_branch" "$temp_branch"
                     else
                         error "Failed to checkout temporary branch"
                         return 1
