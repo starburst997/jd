@@ -68,16 +68,21 @@ add_secret() {
 
     # Get secret value from 1Password
     local secret_value
-    if ! secret_value=$(op read "$op_reference" 2>/dev/null); then
+    if ! secret_value=$(op read "$op_reference" 2>&1); then
         error "Failed to read $secret_name from 1Password: $op_reference"
+        echo -e "${DIM}Error: $secret_value${NC}" >&2
+        info "Make sure you're signed in to 1Password: op signin"
         return 1
     fi
 
     # Add secret to GitHub repository
-    if echo "$secret_value" | gh secret set "$secret_name" 2>/dev/null; then
+    local gh_error
+    if gh_error=$(echo "$secret_value" | gh secret set "$secret_name" 2>&1); then
         log "✓ Added $secret_name"
     else
         error "Failed to add $secret_name to GitHub repository"
+        echo -e "${DIM}Error: $gh_error${NC}" >&2
+        info "Make sure you have admin access to the repository"
         return 1
     fi
 }

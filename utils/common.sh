@@ -29,6 +29,32 @@ error() {
     echo -e "${RED}[jd error]${NC} $*" >&2
 }
 
+# Run command and capture output, display error on failure
+# Usage: run_with_error_capture "description" command args...
+# Returns the command's exit code
+run_with_error_capture() {
+    local description="$1"
+    shift
+
+    local temp_output=$(mktemp)
+    local exit_code=0
+
+    # Run command and capture both stdout and stderr
+    if ! "$@" >"$temp_output" 2>&1; then
+        exit_code=$?
+        error "$description"
+
+        # Show the actual error output if it exists and is not empty
+        if [ -s "$temp_output" ]; then
+            echo -e "${DIM}Command output:${NC}" >&2
+            cat "$temp_output" >&2
+        fi
+    fi
+
+    rm -f "$temp_output"
+    return $exit_code
+}
+
 warning() {
     echo -e "${YELLOW}[jd warning]${NC} $*"
 }

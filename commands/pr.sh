@@ -437,7 +437,11 @@ execute_command() {
             [ -n "$pr_url" ] && info "PR URL: $pr_url"
         fi
     else
-        error "Failed to create pull request"
+        run_with_error_capture "Failed to create pull request" gh "${gh_args[@]}"
+        info "Common issues:"
+        info "  - GitHub authentication needed (run: gh auth login)"
+        info "  - PR already exists for this branch"
+        info "  - Invalid branch or base branch"
         return 1
     fi
 }

@@ -208,6 +208,15 @@ execute_command() {
         return 1
     fi
 
+    # Check for uncommitted changes
+    if ! git diff-index --quiet HEAD --; then
+        warning "You have uncommitted changes"
+        if ! confirm "Merge PR anyway?" "n"; then
+            info "Commit or stash your changes first"
+            return 1
+        fi
+    fi
+
     info "Looking for PR for branch: $branch"
 
     # Find PR for this branch
@@ -227,9 +236,12 @@ execute_command() {
 
     # Merge the PR
     info "Merging PR #$pr_number (type: $merge_type)..."
-    if ! gh pr merge "$pr_number" "--$merge_type" --delete-branch 2>/dev/null; then
-        error "Failed to merge PR #$pr_number"
-        info "You may need to resolve conflicts or check PR status"
+    if ! run_with_error_capture "Failed to merge PR #$pr_number" gh pr merge "$pr_number" "--$merge_type" --delete-branch; then
+        info "Common issues:"
+        info "  - PR has merge conflicts that need to be resolved"
+        info "  - PR checks/CI are still running or have failed"
+        info "  - You don't have permission to merge"
+        info "  - Uncommitted changes in your working directory (already warned above)"
         return 1
     fi
 
@@ -240,10 +252,11 @@ execute_command() {
         info "Updating local repository..."
 
         # Fetch latest changes and update local default branch to match origin
-        if ! git fetch origin "$default_branch:$default_branch" 2>/dev/null; then
+        if ! run_with_error_capture "Failed to fast-forward update $default_branch" git fetch origin "$default_branch:$default_branch"; then
             # If fast-forward fails, try regular fetch
-            if ! git fetch origin 2>/dev/null; then
-                warning "Failed to fetch from origin"
+            if ! run_with_error_capture "Failed to fetch from origin" git fetch origin; then
+                warning "Could not fetch latest changes from origin"
+                info "You may need to manually run: git fetch origin"
                 return 0
             fi
             debug "Fetched from origin (local branch may have diverged)"
