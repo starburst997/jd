@@ -40,10 +40,10 @@ Examples:
 
 Workflow Examples:
     # On feature branch "feature-x" with default branch "dev"
-    jd merge                        # Squash merges feature-x → dev
+    jd merge                        # Squash merges feature-x → dev, switches to dev
 
     # On default branch "dev" (not main)
-    jd merge                        # Regular merge dev → main
+    jd merge                        # Regular merge dev → main, stays on dev
 
 EOF
 }
@@ -294,8 +294,15 @@ execute_command() {
     # Merge the PR
     info "Merging PR #$pr_number (type: $merge_type)..."
 
+    # Build merge arguments
+    local merge_args=("$pr_number" "--$merge_type")
+
+    # Only delete branch if NOT merging dev→main (we want to keep dev branch)
+    if [ "$is_dev_to_main" = false ]; then
+        merge_args+=(--delete-branch)
+    fi
+
     # For squash merges, use PR title as commit subject
-    local merge_args=("$pr_number" "--$merge_type" --delete-branch)
     if [ "$merge_type" = "squash" ]; then
         merge_args+=(--subject "$pr_title (#$pr_number)")
     fi
@@ -312,6 +319,13 @@ execute_command() {
     log "PR merged successfully"
 
     # Only auto-switch if we used the current branch (not --branch flag)
+    # Exception: when merging dev→main, stay on dev (don't switch)
+    if [ "$is_dev_to_main" = true ]; then
+        info "Staying on $default_branch branch (merged to main)"
+        success "Merge complete!"
+        return 0
+    fi
+
     if [ -z "$1" ] || [ "$1" != "--branch" ]; then
         info "Updating local repository..."
 
