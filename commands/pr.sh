@@ -27,6 +27,7 @@ Options:
     -h, --help        Show this help message
 
 Smart Features:
+    - Draft release detection: When creating dev→main PR, checks for draft release and uses its content
     - AI-powered title and description generation using Claude CLI
     - Auto-detects conventional commit format for title (fallback)
     - Uses recent commit messages for PR body if not specified (fallback)
@@ -363,9 +364,45 @@ execute_command() {
         draft=true
     fi
 
-    # Try to generate with Claude if enabled and not all fields provided
+    # Check for draft release if creating PR from default branch to main
+    local draft_release_found=false
+    local default_branch=$(get_default_branch)
+    if [ "$head_branch" = "$default_branch" ] && [ "$base_branch" = "main" ] && [ -z "$title" ] && [ -z "$body" ]; then
+        info "Checking for draft release..."
+
+        # Get the latest tag with -dev suffix (the upcoming version being prepared)
+        local dev_tags=$(git tag -l "v*.*.*-dev" --sort=creatordate 2>/dev/null)
+        local latest_dev_tag=$(echo "$dev_tags" | tail -n 1)
+
+        if [ -n "$latest_dev_tag" ]; then
+            # Extract version without patch and suffix (vX.Y from vX.Y.Z-dev)
+            local version_no_patch="v$(echo "${latest_dev_tag#v}" | sed 's/-dev$//' | cut -d. -f1-2)"
+            debug "Found dev tag: $latest_dev_tag, looking for draft release with title: $version_no_patch"
+
+            # Find draft release with this title
+            local draft_tag=$(gh release list --json tagName,name,isDraft --jq ".[] | select(.isDraft == true and .name == \"$version_no_patch\") | .tagName" 2>/dev/null || echo "")
+
+            if [ -n "$draft_tag" ]; then
+                log "Found draft release: $draft_tag with title: $version_no_patch"
+                draft_release_found=true
+
+                # Get draft release content
+                title="$version_no_patch"
+                body=$(gh release view "$draft_tag" --json body --jq '.body' 2>/dev/null)
+
+                log "✓ Using draft release content for PR"
+                info "Title: $title"
+            else
+                debug "No draft release found for $version_no_patch"
+            fi
+        else
+            debug "No vX.Y.Z-dev tags found, skipping draft check"
+        fi
+    fi
+
+    # Try to generate with Claude if enabled and not all fields provided (skip if draft release found)
     local claude_generated=false
-    if [ "$use_claude" = true ] && { [ -z "$title" ] || [ -z "$body" ]; }; then
+    if [ "$draft_release_found" = false ] && [ "$use_claude" = true ] && { [ -z "$title" ] || [ -z "$body" ]; }; then
         info "Generating PR content with Claude ($claude_model)..."
 
         local generate_title_flag=false
