@@ -410,6 +410,20 @@ execute_command() {
                 # Get draft release body
                 body=$(gh release view "$draft_tag" --json body --jq '.body' 2>/dev/null)
 
+                # Clean body: for lines starting with "* ", keep only the PR URL
+                # Example: "* Remove trailing whitespace by @user in https://..." becomes "* https://..."
+                body=$(echo "$body" | awk '
+                    /^\* / {
+                        # Extract URL if it exists (matches https://github.com/.../pull/[0-9]+)
+                        if (match($0, /https:\/\/github\.com\/[^\/]+\/[^\/]+\/pull\/[0-9]+/)) {
+                            url = substr($0, RSTART, RLENGTH)
+                            print "* " url
+                            next
+                        }
+                    }
+                    { print }
+                ')
+
                 log "✓ Using draft release content for PR"
                 info "Title: $title"
             else
