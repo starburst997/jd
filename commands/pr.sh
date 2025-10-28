@@ -11,7 +11,7 @@ Usage: jd pr [OPTIONS]
 Options:
     --title TITLE     PR title (defaults to AI-generated or branch name)
     --body BODY       PR body/description (defaults to AI-generated)
-    --base BRANCH     Base branch (defaults to main/master)
+    --base BRANCH     Base branch (auto-detects: main for dev branch, default branch for features)
     --head BRANCH     Head branch (defaults to current branch)
     --draft           Create as draft PR
     --auto-draft      Auto-detect draft from branch name (wip/draft prefixes)
@@ -27,6 +27,7 @@ Options:
     -h, --help        Show this help message
 
 Smart Features:
+    - Smart base branch detection: Auto-targets main when on dev branch, default branch for features
     - Draft release detection: When creating dev→main PR, checks for draft release and uses its content
     - AI-powered title and description generation using Claude CLI
     - Auto-detects conventional commit format for title (fallback)
@@ -44,6 +45,13 @@ Examples:
     jd pr --title "Fix bug" --body "..."   # Custom title and body (no AI)
     jd pr --reviewers user1,user2          # Request reviews
     jd pr --base develop                   # PR against develop branch
+
+Workflow Examples:
+    # On feature branch "feature-x" with default branch "dev"
+    jd pr                                    # Creates feature-x → dev PR
+
+    # On default branch "dev" (not main)
+    jd pr                                    # Creates dev → main PR (checks for draft release)
 
 EOF
 }
@@ -321,12 +329,23 @@ execute_command() {
 
     # Get branch information
     [ -z "$head_branch" ] && head_branch=$(get_current_branch)
-    [ -z "$base_branch" ] && base_branch=$(get_default_branch)
+    local default_branch=$(get_default_branch)
 
-    # Check if already on base branch
+    # If no base branch specified, determine it intelligently
+    if [ -z "$base_branch" ]; then
+        # If on default branch (e.g., dev) and it's not main, target main
+        if [ "$head_branch" = "$default_branch" ] && [ "$default_branch" != "main" ]; then
+            base_branch="main"
+            info "Auto-detected base branch: main (merging from $default_branch)"
+        else
+            base_branch="$default_branch"
+        fi
+    fi
+
+    # Check if trying to create PR from main to main (or same branch to itself)
     if [ "$head_branch" = "$base_branch" ]; then
-        error "Cannot create PR: currently on base branch ($base_branch)"
-        info "Please create a feature branch first"
+        error "Cannot create PR: head and base branches are the same ($head_branch)"
+        info "Please create a feature branch first or specify a different base branch"
         return 1
     fi
 
@@ -366,7 +385,6 @@ execute_command() {
 
     # Check for draft release if creating PR from default branch to main
     local draft_release_found=false
-    local default_branch=$(get_default_branch)
     if [ "$head_branch" = "$default_branch" ] && [ "$base_branch" = "main" ] && [ -z "$title" ] && [ -z "$body" ]; then
         info "Checking for draft release..."
 
@@ -377,32 +395,35 @@ execute_command() {
         if [ -n "$latest_dev_tag" ]; then
             # Extract version without patch and suffix (vX.Y from vX.Y.Z-dev)
             local version_no_patch="v$(echo "${latest_dev_tag#v}" | sed 's/-dev$//' | cut -d. -f1-2)"
-            debug "Found dev tag: $latest_dev_tag, looking for draft release with title: $version_no_patch"
+            debug "Found dev tag: $latest_dev_tag, using version: $version_no_patch"
+
+            # Always use version as title for dev→main PRs
+            title="$version_no_patch"
 
             # Find draft release with this title
             local draft_tag=$(gh release list --json tagName,name,isDraft --jq ".[] | select(.isDraft == true and .name == \"$version_no_patch\") | .tagName" 2>/dev/null || echo "")
 
             if [ -n "$draft_tag" ]; then
-                log "Found draft release: $draft_tag with title: $version_no_patch"
+                log "Found draft release: $draft_tag"
                 draft_release_found=true
 
-                # Get draft release content
-                title="$version_no_patch"
+                # Get draft release body
                 body=$(gh release view "$draft_tag" --json body --jq '.body' 2>/dev/null)
 
                 log "✓ Using draft release content for PR"
                 info "Title: $title"
             else
-                debug "No draft release found for $version_no_patch"
+                debug "No draft release found for $version_no_patch, will generate body with Claude"
+                info "Title: $title"
             fi
         else
-            debug "No vX.Y.Z-dev tags found, skipping draft check"
+            debug "No vX.Y.Z-dev tags found, skipping version detection"
         fi
     fi
 
-    # Try to generate with Claude if enabled and not all fields provided (skip if draft release found)
+    # Try to generate with Claude if enabled and body is not provided (title may be set from version)
     local claude_generated=false
-    if [ "$draft_release_found" = false ] && [ "$use_claude" = true ] && { [ -z "$title" ] || [ -z "$body" ]; }; then
+    if [ "$draft_release_found" = false ] && [ "$use_claude" = true ] && [ -z "$body" ]; then
         info "Generating PR content with Claude ($claude_model)..."
 
         local generate_title_flag=false
