@@ -10,7 +10,7 @@ Usage: jd merge [OPTIONS]
 
 Options:
     --branch BRANCH   Branch name to find PR for (defaults to current branch)
-    --type TYPE       Merge type: squash, merge, or rebase (defaults to squash)
+    --type TYPE       Merge type: squash, merge, or rebase (auto-detects: squash for features, merge for dev→main)
     --clean           Only cleanup temp branches (no merge)
     -h, --help        Show this help message
 
@@ -24,6 +24,7 @@ Features:
     - Worktree-aware: creates temp branch if default branch is checked out elsewhere
     - Auto-cleanup of old temp branches
     - Special case: merging default branch (e.g., dev) to main is supported
+    - Smart merge type: Uses 'merge' for dev→main, 'squash' for feature branches
 
 Behavior:
     - On feature branch: Merges PR to default branch (e.g., feature → dev)
@@ -31,18 +32,18 @@ Behavior:
     - On main branch: Error (cannot merge main to itself)
 
 Examples:
-    jd merge                        # Squash merge PR for current branch
-    jd merge --type merge           # Regular merge PR for current branch
+    jd merge                        # Auto-merge PR (squash for features, merge for dev→main)
+    jd merge --type squash          # Force squash merge (e.g., for dev→main if needed)
     jd merge --type rebase          # Rebase merge PR for current branch
     jd merge --branch feature-x     # Squash merge PR for specific branch
     jd merge --clean                # Only cleanup old temp branches
 
 Workflow Examples:
     # On feature branch "feature-x" with default branch "dev"
-    jd merge                        # Merges feature-x → dev
+    jd merge                        # Squash merges feature-x → dev
 
     # On default branch "dev" (not main)
-    jd merge                        # Merges dev → main
+    jd merge                        # Regular merge dev → main
 
 EOF
 }
@@ -164,7 +165,7 @@ execute_command() {
 
     # Default values
     local branch=""
-    local merge_type="squash"
+    local merge_type=""  # Will be determined later based on context
     local clean_only=false
 
     # Parse options
@@ -219,6 +220,7 @@ execute_command() {
 
     # Special case: if on default branch, merge TO main
     local target_branch=""
+    local is_dev_to_main=false
     if [ "$branch" = "$default_branch" ]; then
         # If default branch IS main, error out
         if [ "$default_branch" = "main" ]; then
@@ -229,7 +231,19 @@ execute_command() {
 
         # Otherwise, we're merging default branch (e.g., dev) TO main
         target_branch="main"
+        is_dev_to_main=true
         info "Merging from default branch ($default_branch) to main"
+    fi
+
+    # Set default merge type based on context
+    if [ -z "$merge_type" ]; then
+        if [ "$is_dev_to_main" = true ]; then
+            merge_type="merge"  # Use regular merge for dev→main
+            debug "Using merge type 'merge' for $default_branch → main"
+        else
+            merge_type="squash"  # Use squash for feature branches
+            debug "Using merge type 'squash' for feature branch"
+        fi
     fi
 
     # Check for uncommitted changes
