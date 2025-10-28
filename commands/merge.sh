@@ -279,7 +279,14 @@ execute_command() {
 
     # Merge the PR
     info "Merging PR #$pr_number (type: $merge_type)..."
-    if ! run_with_error_capture "Failed to merge PR #$pr_number" gh pr merge "$pr_number" "--$merge_type" --delete-branch; then
+
+    # For squash merges, use PR title as commit subject
+    local merge_args=("$pr_number" "--$merge_type" --delete-branch)
+    if [ "$merge_type" = "squash" ]; then
+        merge_args+=(--subject "$pr_title (#$pr_number)")
+    fi
+
+    if ! run_with_error_capture "Failed to merge PR #$pr_number" gh pr merge "${merge_args[@]}"; then
         info "Common issues:"
         info "  - PR has merge conflicts that need to be resolved"
         info "  - PR checks/CI are still running or have failed"
