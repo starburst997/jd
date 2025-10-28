@@ -294,17 +294,37 @@ execute_command() {
     if [ -z "$1" ] || [ "$1" != "--branch" ]; then
         info "Updating local repository..."
 
-        # Fetch latest changes and update local default branch to match origin
-        if ! run_with_error_capture "Failed to fast-forward update $default_branch" git fetch origin "$default_branch:$default_branch"; then
-            # If fast-forward fails, try regular fetch
-            if ! run_with_error_capture "Failed to fetch from origin" git fetch origin; then
-                warning "Could not fetch latest changes from origin"
-                info "You may need to manually run: git fetch origin"
-                return 0
+        # Get current branch to determine fetch strategy
+        local current_branch=$(get_current_branch)
+
+        # Fetch latest changes
+        if [ "$current_branch" = "$default_branch" ]; then
+            # Already on default branch, use git pull to update
+            debug "Already on $default_branch, using pull to update"
+            if ! git pull --ff-only origin "$default_branch" 2>/dev/null; then
+                # If fast-forward pull fails, try regular fetch
+                if ! git fetch origin 2>/dev/null; then
+                    warning "Could not fetch latest changes from origin"
+                    info "You may need to manually run: git fetch origin"
+                    return 0
+                fi
+                debug "Fetched from origin (local branch may have diverged)"
+            else
+                debug "Updated $default_branch with fast-forward pull"
             fi
-            debug "Fetched from origin (local branch may have diverged)"
         else
-            debug "Updated local $default_branch to match origin/$default_branch"
+            # Not on default branch, can safely update its ref
+            if ! git fetch origin "$default_branch:$default_branch" 2>/dev/null; then
+                # If fast-forward fails, try regular fetch
+                if ! git fetch origin 2>/dev/null; then
+                    warning "Could not fetch latest changes from origin"
+                    info "You may need to manually run: git fetch origin"
+                    return 0
+                fi
+                debug "Fetched from origin (local branch may have diverged)"
+            else
+                debug "Updated local $default_branch to match origin/$default_branch"
+            fi
         fi
 
         # Try to switch to default branch
@@ -365,13 +385,17 @@ execute_command() {
         # Delete local branch after successful merge and branch switch
         # Skip deletion for default branch and main branch
         if [ "$branch" != "$default_branch" ] && [ "$branch" != "main" ]; then
-            info "Deleting local branch: $branch"
-            # The remote branch is already deleted by gh pr merge --delete-branch
-            if git branch -D "$branch" 2>/dev/null; then
-                log "✓ Deleted local branch: $branch"
+            # Check if branch still exists locally (gh pr merge --delete-branch may have already deleted it)
+            if git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
+                info "Deleting local branch: $branch"
+                if git branch -D "$branch" 2>/dev/null; then
+                    log "✓ Deleted local branch: $branch"
+                else
+                    warning "Failed to delete local branch: $branch"
+                    debug "Branch may not exist or is the current branch"
+                fi
             else
-                warning "Failed to delete local branch: $branch"
-                debug "Branch may not exist or is the current branch"
+                debug "Local branch $branch already deleted (likely by gh pr merge)"
             fi
         else
             if [ "$branch" = "$default_branch" ]; then
