@@ -76,10 +76,14 @@ _jd() {
                     _arguments \
                         '--npm[Also add NPM_TOKEN secret]' \
                         '--extensions[Also add VSCE_PAT and OVSX_PAT secrets]' \
-                        '--claude[Also add CLAUDE_CODE_OAUTH_TOKEN secret]' \
+                        '--claude[Also add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows, and create JD label]' \
                         '--apple[Also add Apple App Store and Fastlane secrets]' \
                         '--suffix[Add suffix to APPSTORE and MATCH_ secrets]:suffix:' \
                         '--rules[Apply branch protection rulesets (Main and Dev branches)]' \
+                        '--pages[Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)]' \
+                        '--gh-pages[Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)]' \
+                        '--release[Setup release workflow (copy release.yml workflow)]' \
+                        '--action[Shortcut for --release --pages --claude]' \
                         '--public[Create public repository (default: private)]' \
                         '--description[Repository description]:description:' \
                         '--no-init[Skip git initialization (use existing repo)]' \

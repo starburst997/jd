@@ -1,0 +1,66 @@
+name: GitHub Pages
+
+on:
+  workflow_call:
+    secrets:
+      BOT_ID:
+        description: "GitHub App ID for custom bot (optional)"
+        required: false
+      BOT_KEY:
+        description: "GitHub App private key for custom bot (optional)"
+        required: false
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".github/workflows/gh-pages.yml"
+  workflow_dispatch:
+
+# Permissions set by workflow call
+# permissions:
+#   contents: read
+#   pages: write
+#   id-token: write
+
+permissions:
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Initialize custom bot
+        id: bot
+        uses: starburst997/custom-bot-init@v1
+        with:
+          app-id: ${{ secrets.BOT_ID }}
+          private-key: ${{ secrets.BOT_KEY }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          token: ${{ steps.bot.outputs.token }}

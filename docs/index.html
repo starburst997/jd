@@ -609,8 +609,8 @@
               Initialize GitHub repository and configure secrets from 1Password
             </div>
             <div class="command-usage">
-              jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix SUFFIX] [--rules] [--public]
-              [--description DESC] [--no-init]
+              jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix SUFFIX] [--rules]
+              [--pages] [--release] [--action] [--public] [--description DESC] [--no-init]
             </div>
             <ul class="args-list">
               <li>
@@ -626,7 +626,7 @@
               </li>
               <li>
                 <span class="arg-name">--claude</span>
-                <span class="arg-desc">Add CLAUDE_CODE_OAUTH_TOKEN secret</span>
+                <span class="arg-desc">Add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows, and create JD label</span>
               </li>
               <li>
                 <span class="arg-name">--apple</span>
@@ -639,6 +639,18 @@
               <li>
                 <span class="arg-name">--rules</span>
                 <span class="arg-desc">Apply branch protection rulesets for main and dev branches</span>
+              </li>
+              <li>
+                <span class="arg-name">--pages, --gh-pages</span>
+                <span class="arg-desc">Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)</span>
+              </li>
+              <li>
+                <span class="arg-name">--release</span>
+                <span class="arg-desc">Setup release workflow (copy release.yml workflow)</span>
+              </li>
+              <li>
+                <span class="arg-name">--action</span>
+                <span class="arg-desc">Shortcut for --release --pages --claude</span>
               </li>
               <li>
                 <span class="arg-name">--public</span>

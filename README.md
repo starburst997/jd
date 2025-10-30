@@ -198,14 +198,23 @@ jd repo --npm
 # Initialize with extension publishing tokens
 jd repo --extensions
 
-# Initialize with Claude Code OAuth token
+# Initialize with Claude Code OAuth token, workflows, and label
 jd repo --claude
 
 # Initialize with branch protection rulesets
 jd repo --rules
 
-# Initialize with all secrets and rulesets
-jd repo --npm --extensions --claude --rules
+# Setup GitHub Pages (workflow + docs/index.html)
+jd repo --pages
+
+# Setup release workflow
+jd repo --release
+
+# Setup all GitHub Actions (shortcut for --release --pages --claude)
+jd repo --action
+
+# Initialize with all secrets and configurations
+jd repo --npm --extensions --action --rules
 
 # Create public repository
 jd repo --public
@@ -236,6 +245,22 @@ The repo command integrates with 1Password CLI to securely add GitHub secrets:
 **With `--claude` flag:**
 
 - `CLAUDE_CODE_OAUTH_TOKEN` - Claude Code OAuth token
+- Copies JD workflows (`jd.yml`, `jd-review.yml`) to `.github/workflows/`
+- Creates JD label (purple #7f3cf0, "AI Bot")
+
+**With `--pages` or `--gh-pages` flag:**
+
+- Copies `gh-pages.yml` workflow to `.github/workflows/`
+- Creates `docs/` directory with a professional "Coming Soon" `index.html`
+
+**With `--release` flag:**
+
+- Copies `release.yml` workflow to `.github/workflows/`
+
+**With `--action` flag:**
+
+- Shortcut that enables `--release`, `--pages`, and `--claude` all at once
+- Perfect for quickly setting up a complete GitHub Actions environment
 
 **With `--rules` flag:**
 

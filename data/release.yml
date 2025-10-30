@@ -1,0 +1,11 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    uses: starburst997/workflows/.github/workflows/release.yml@v1
+    secrets: inherit

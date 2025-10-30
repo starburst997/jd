@@ -24,6 +24,9 @@ Options:
     --apple               Also add Apple App Store and Fastlane secrets
     --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
     --rules               Apply branch protection rulesets (Main and Dev branches)
+    --pages, --gh-pages   Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)
+    --release             Setup release workflow (copy release.yml workflow)
+    --action              Shortcut for --release --pages --claude
     --public              Create public repository (default: private)
     --description DESC    Repository description
     --no-init             Skip git initialization (use existing repo)
@@ -37,6 +40,9 @@ Examples:
     jd repo --apple                            # Add Apple, Fastlane, and GH_PAT secrets
     jd repo --apple --suffix DEV               # Add Apple secrets with _DEV suffix
     jd repo --rules                            # Apply branch protection rulesets
+    jd repo --pages                            # Setup GitHub Pages
+    jd repo --release                          # Setup release workflow
+    jd repo --action                           # Setup release, pages, and JD workflows
     jd repo --npm --extensions --claude        # Add all secrets
     jd repo --public --description "My awesome project"
 
@@ -164,6 +170,107 @@ setup_claude_workflows() {
     done
 }
 
+# Setup GitHub Pages
+setup_github_pages() {
+    info "Setting up GitHub Pages..."
+
+    # Create .github/workflows directory if it doesn't exist
+    local workflows_dir=".github/workflows"
+    if [ ! -d "$workflows_dir" ]; then
+        info "Creating $workflows_dir directory..."
+        if ! mkdir -p "$workflows_dir"; then
+            error "Failed to create $workflows_dir directory"
+            return 1
+        fi
+    fi
+
+    # Copy gh-pages.yml workflow if it doesn't exist
+    local workflow="gh-pages.yml"
+    local dest="$workflows_dir/$workflow"
+    if [ -f "$dest" ]; then
+        info "Workflow $workflow already exists, skipping..."
+    else
+        info "Copying $workflow to $workflows_dir..."
+        local source="$JD_CLI_ROOT/data/$workflow"
+        if [ ! -f "$source" ]; then
+            error "Source workflow not found: $source"
+            return 1
+        fi
+        if cp "$source" "$dest"; then
+            log "✓ Copied $workflow"
+        else
+            error "Failed to copy $workflow"
+            return 1
+        fi
+    fi
+
+    # Create docs directory with index.html if it doesn't exist
+    if [ ! -d "docs" ]; then
+        info "Creating docs directory..."
+        if ! mkdir -p "docs"; then
+            error "Failed to create docs directory"
+            return 1
+        fi
+    fi
+
+    local docs_index="docs/index.html"
+    if [ -f "$docs_index" ]; then
+        info "File $docs_index already exists, skipping..."
+    else
+        info "Copying index.html to docs/..."
+        local source="$JD_CLI_ROOT/data/index.html"
+        if [ ! -f "$source" ]; then
+            error "Source index.html not found: $source"
+            return 1
+        fi
+        if cp "$source" "$docs_index"; then
+            log "✓ Copied index.html to docs/"
+        else
+            error "Failed to copy index.html"
+            return 1
+        fi
+    fi
+
+    log "GitHub Pages configured successfully"
+}
+
+# Setup release workflow
+setup_release_workflow() {
+    info "Setting up release workflow..."
+
+    # Create .github/workflows directory if it doesn't exist
+    local workflows_dir=".github/workflows"
+    if [ ! -d "$workflows_dir" ]; then
+        info "Creating $workflows_dir directory..."
+        if ! mkdir -p "$workflows_dir"; then
+            error "Failed to create $workflows_dir directory"
+            return 1
+        fi
+    fi
+
+    # Copy release.yml workflow if it doesn't exist
+    local workflow="release.yml"
+    local dest="$workflows_dir/$workflow"
+    if [ -f "$dest" ]; then
+        info "Workflow $workflow already exists, skipping..."
+    else
+        info "Copying $workflow to $workflows_dir..."
+        local source="$JD_CLI_ROOT/data/$workflow"
+        if [ ! -f "$source" ]; then
+            error "Source workflow not found: $source"
+            return 1
+        fi
+        if cp "$source" "$dest"; then
+            log "✓ Copied $workflow"
+        else
+            error "Failed to copy $workflow"
+            return 1
+        fi
+    fi
+
+    log "Release workflow configured successfully"
+}
+
 # Create or update the JD label
 create_jd_label() {
     info "Ensuring JD label exists..."
@@ -213,6 +320,8 @@ execute_command() {
     local add_claude=false
     local add_apple=false
     local add_rules=false
+    local add_pages=false
+    local add_release=false
     local suffix=""
     local visibility="private"
     local description=""
@@ -243,6 +352,20 @@ execute_command() {
                 ;;
             --rules)
                 add_rules=true
+                shift
+                ;;
+            --pages|--gh-pages)
+                add_pages=true
+                shift
+                ;;
+            --release)
+                add_release=true
+                shift
+                ;;
+            --action)
+                add_release=true
+                add_pages=true
+                add_claude=true
                 shift
                 ;;
             --public)
@@ -354,6 +477,16 @@ execute_command() {
     # Apply branch protection rulesets if requested
     if [ "$add_rules" = true ]; then
         apply_rulesets || return 1
+    fi
+
+    # Setup GitHub Pages if requested
+    if [ "$add_pages" = true ]; then
+        setup_github_pages || return 1
+    fi
+
+    # Setup release workflow if requested
+    if [ "$add_release" = true ]; then
+        setup_release_workflow || return 1
     fi
 
     # Add Claude Code configuration if requested
