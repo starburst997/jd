@@ -15,12 +15,12 @@ Description:
     Always adds:
     - BOT_ID (from op://dev/github-app/BOT_ID)
     - BOT_KEY (from op://dev/github-app/BOT_KEY)
-    - JD label (purple #7f3cf0, "AI Bot")
 
 Options:
     --npm                 Also add NPM_TOKEN secret
     --extensions          Also add VSCE_PAT and OVSX_PAT secrets
-    --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret
+    --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows,
+                          and create JD label (purple #7f3cf0, "AI Bot")
     --apple               Also add Apple App Store and Fastlane secrets
     --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
     --rules               Apply branch protection rulesets (Main and Dev branches)
@@ -125,6 +125,43 @@ apply_rulesets() {
     fi
 
     log "Branch protection rulesets configured"
+}
+
+# Copy Claude Code workflow files
+setup_claude_workflows() {
+    info "Setting up GitHub Actions workflows for JD..."
+
+    # Create .github/workflows directory if it doesn't exist
+    local workflows_dir=".github/workflows"
+    if [ ! -d "$workflows_dir" ]; then
+        info "Creating $workflows_dir directory..."
+        if ! mkdir -p "$workflows_dir"; then
+            error "Failed to create $workflows_dir directory"
+            return 1
+        fi
+    fi
+
+    # Copy workflow files if they don't exist
+    local workflows=("jd.yml" "jd-review.yml")
+    for workflow in "${workflows[@]}"; do
+        local dest="$workflows_dir/$workflow"
+        if [ -f "$dest" ]; then
+            info "Workflow $workflow already exists, skipping..."
+        else
+            info "Copying $workflow to $workflows_dir..."
+            local source="$JD_CLI_ROOT/data/$workflow"
+            if [ ! -f "$source" ]; then
+                error "Source workflow not found: $source"
+                return 1
+            fi
+            if cp "$source" "$dest"; then
+                log "✓ Copied $workflow"
+            else
+                error "Failed to copy $workflow"
+                return 1
+            fi
+        fi
+    done
 }
 
 # Create or update the JD label
@@ -319,8 +356,11 @@ execute_command() {
         apply_rulesets || return 1
     fi
 
-    # Create JD label
-    create_jd_label || return 1
+    # Add Claude Code configuration if requested
+    if [ "$add_claude" = true ]; then
+        setup_claude_workflows || return 1
+        create_jd_label || return 1
+    fi
 
     log "Repository initialization complete!"
 
