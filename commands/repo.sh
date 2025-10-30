@@ -20,7 +20,7 @@ Options:
     --npm                 Also add NPM_TOKEN secret
     --extensions          Also add VSCE_PAT and OVSX_PAT secrets
     --claude              Also add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows,
-                          and create JD label (purple #7f3cf0, "AI Bot")
+                          copy settings.json to .claude/, and create JD label
     --apple               Also add Apple App Store and Fastlane secrets
     --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
     --rules               Apply branch protection rulesets (Main and Dev branches)
@@ -168,6 +168,43 @@ setup_claude_workflows() {
             fi
         fi
     done
+
+    # Copy settings.json to .claude/ if it doesn't exist
+    setup_claude_settings || return 1
+}
+
+# Copy settings.json to .claude/ directory
+setup_claude_settings() {
+    info "Setting up Claude settings..."
+
+    # Create .claude directory if it doesn't exist
+    local claude_dir=".claude"
+    if [ ! -d "$claude_dir" ]; then
+        info "Creating $claude_dir directory..."
+        if ! mkdir -p "$claude_dir"; then
+            error "Failed to create $claude_dir directory"
+            return 1
+        fi
+    fi
+
+    # Copy settings.json if it doesn't exist
+    local dest="$claude_dir/settings.json"
+    if [ -f "$dest" ]; then
+        info "File $dest already exists, skipping..."
+    else
+        info "Copying settings.json to $claude_dir/..."
+        local source="$JD_CLI_ROOT/data/settings.json"
+        if [ ! -f "$source" ]; then
+            error "Source settings.json not found: $source"
+            return 1
+        fi
+        if cp "$source" "$dest"; then
+            log "✓ Copied settings.json to $claude_dir/"
+        else
+            error "Failed to copy settings.json"
+            return 1
+        fi
+    fi
 }
 
 # Setup GitHub Pages
