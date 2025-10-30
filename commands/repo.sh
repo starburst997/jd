@@ -15,6 +15,7 @@ Description:
     Always adds:
     - BOT_ID (from op://dev/github-app/BOT_ID)
     - BOT_KEY (from op://dev/github-app/BOT_KEY)
+    - JD label (purple #7f3cf0, "AI Bot")
 
 Options:
     --npm                 Also add NPM_TOKEN secret
@@ -124,6 +125,45 @@ apply_rulesets() {
     fi
 
     log "Branch protection rulesets configured"
+}
+
+# Create or update the JD label
+create_jd_label() {
+    info "Ensuring JD label exists..."
+
+    # Get repository name with owner
+    local repo_full_name
+    if ! repo_full_name=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null); then
+        error "Failed to get repository name"
+        return 1
+    fi
+
+    # Check if label already exists
+    local label_exists
+    if label_exists=$(gh api "repos/$repo_full_name/labels/JD" 2>/dev/null); then
+        # Label exists, update it to ensure correct color and description
+        info "Updating existing JD label..."
+        if gh api "repos/$repo_full_name/labels/JD" --method PATCH \
+            -f color="7f3cf0" \
+            -f description="AI Bot" >/dev/null 2>&1; then
+            log "✓ JD label updated"
+        else
+            warning "Failed to update JD label"
+            return 1
+        fi
+    else
+        # Label doesn't exist, create it
+        info "Creating JD label..."
+        if gh api "repos/$repo_full_name/labels" --method POST \
+            -f name="JD" \
+            -f color="7f3cf0" \
+            -f description="AI Bot" >/dev/null 2>&1; then
+            log "✓ JD label created"
+        else
+            error "Failed to create JD label"
+            return 1
+        fi
+    fi
 }
 
 execute_command() {
@@ -278,6 +318,9 @@ execute_command() {
     if [ "$add_rules" = true ]; then
         apply_rulesets || return 1
     fi
+
+    # Create JD label
+    create_jd_label || return 1
 
     log "Repository initialization complete!"
 
