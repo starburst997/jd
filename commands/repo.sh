@@ -135,10 +135,11 @@ apply_rulesets() {
 
 # Copy Claude Code workflow files
 setup_claude_workflows() {
+    local repo_root="$1"
     info "Setting up GitHub Actions workflows for JD..."
 
     # Create .github/workflows directory if it doesn't exist
-    local workflows_dir=".github/workflows"
+    local workflows_dir="$repo_root/.github/workflows"
     if [ ! -d "$workflows_dir" ]; then
         info "Creating $workflows_dir directory..."
         if ! mkdir -p "$workflows_dir"; then
@@ -170,15 +171,16 @@ setup_claude_workflows() {
     done
 
     # Copy settings.json to .claude/ if it doesn't exist
-    setup_claude_settings || return 1
+    setup_claude_settings "$repo_root" || return 1
 }
 
 # Copy settings.json to .claude/ directory
 setup_claude_settings() {
+    local repo_root="$1"
     info "Setting up Claude settings..."
 
     # Create .claude directory if it doesn't exist
-    local claude_dir=".claude"
+    local claude_dir="$repo_root/.claude"
     if [ ! -d "$claude_dir" ]; then
         info "Creating $claude_dir directory..."
         if ! mkdir -p "$claude_dir"; then
@@ -209,10 +211,11 @@ setup_claude_settings() {
 
 # Setup GitHub Pages
 setup_github_pages() {
+    local repo_root="$1"
     info "Setting up GitHub Pages..."
 
     # Create .github/workflows directory if it doesn't exist
-    local workflows_dir=".github/workflows"
+    local workflows_dir="$repo_root/.github/workflows"
     if [ ! -d "$workflows_dir" ]; then
         info "Creating $workflows_dir directory..."
         if ! mkdir -p "$workflows_dir"; then
@@ -242,15 +245,15 @@ setup_github_pages() {
     fi
 
     # Create docs directory with index.html if it doesn't exist
-    if [ ! -d "docs" ]; then
+    if [ ! -d "$repo_root/docs" ]; then
         info "Creating docs directory..."
-        if ! mkdir -p "docs"; then
+        if ! mkdir -p "$repo_root/docs"; then
             error "Failed to create docs directory"
             return 1
         fi
     fi
 
-    local docs_index="docs/index.html"
+    local docs_index="$repo_root/docs/index.html"
     if [ -f "$docs_index" ]; then
         info "File $docs_index already exists, skipping..."
     else
@@ -273,10 +276,11 @@ setup_github_pages() {
 
 # Setup release workflow
 setup_release_workflow() {
+    local repo_root="$1"
     info "Setting up release workflow..."
 
     # Create .github/workflows directory if it doesn't exist
-    local workflows_dir=".github/workflows"
+    local workflows_dir="$repo_root/.github/workflows"
     if [ ! -d "$workflows_dir" ]; then
         info "Creating $workflows_dir directory..."
         if ! mkdir -p "$workflows_dir"; then
@@ -363,6 +367,7 @@ execute_command() {
     local visibility="private"
     local description=""
     local skip_init=false
+    local repo_root=""
 
     # Parse options
     while [[ $# -gt 0 ]]; do
@@ -447,6 +452,19 @@ execute_command() {
         fi
     fi
 
+    # Get the repository root directory
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+        if [ -z "$repo_root" ]; then
+            # Fallback to current directory if we can't determine the root
+            repo_root=$(pwd)
+        fi
+    else
+        # Not in a git repo yet, use current directory
+        repo_root=$(pwd)
+    fi
+    debug "Repository root: $repo_root"
+
     # Get repository name from current directory
     local repo_name=$(basename "$(pwd)")
 
@@ -518,17 +536,17 @@ execute_command() {
 
     # Setup GitHub Pages if requested
     if [ "$add_pages" = true ]; then
-        setup_github_pages || return 1
+        setup_github_pages "$repo_root" || return 1
     fi
 
     # Setup release workflow if requested
     if [ "$add_release" = true ]; then
-        setup_release_workflow || return 1
+        setup_release_workflow "$repo_root" || return 1
     fi
 
     # Add Claude Code configuration if requested
     if [ "$add_claude" = true ]; then
-        setup_claude_workflows || return 1
+        setup_claude_workflows "$repo_root" || return 1
         create_jd_label || return 1
     fi
 
