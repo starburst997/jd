@@ -87,6 +87,8 @@ DESCRIPTION:
 
 Include a summary section explaining what was changed and why, and a test plan section with specific things to test. Keep it concise and professional.
 
+IMPORTANT: Do NOT include any footer, signature, or 'Generated with' message. Just provide the clean PR description content.
+
 Commits:
 $commits
 
@@ -98,6 +100,8 @@ $diff"
     else
         # Generate only description with custom title
         prompt="Based on the following git diff and commits, generate a concise PR description for a pull request titled '$custom_title'. Include a summary section explaining what was changed and why, and a test plan section with specific things to test. Keep it concise and professional.
+
+IMPORTANT: Do NOT include any footer, signature, or 'Generated with' message. Just provide the clean PR description content.
 
 Commits:
 $commits
