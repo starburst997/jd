@@ -2,6 +2,11 @@
 
 # Create GitHub pull request with smart defaults
 
+# AI Prompt Constants - Easily editable instructions for Claude
+readonly AI_PR_SECTIONS="Include a summary section explaining what was changed and why, and a test plan section with specific things to test."
+readonly AI_PROFESSIONAL_TONE="Keep it concise and professional."
+readonly AI_NO_FOOTER_INSTRUCTION="IMPORTANT: Do NOT include any footer, signature, or 'Generated with' message. Just provide the clean PR description content."
+
 show_pr_help() {
     cat <<EOF
 Create GitHub pull request with smart defaults
@@ -85,9 +90,9 @@ TITLE: [Your generated title here]
 DESCRIPTION:
 [Your generated description here in markdown format]
 
-Include a summary section explaining what was changed and why, and a test plan section with specific things to test. Keep it concise and professional.
+$AI_PR_SECTIONS $AI_PROFESSIONAL_TONE
 
-IMPORTANT: Do NOT include any footer, signature, or 'Generated with' message. Just provide the clean PR description content.
+$AI_NO_FOOTER_INSTRUCTION
 
 Commits:
 $commits
@@ -99,9 +104,9 @@ Here's a sample of the actual diff (truncated if too long):
 $diff"
     else
         # Generate only description with custom title
-        prompt="Based on the following git diff and commits, generate a concise PR description for a pull request titled '$custom_title'. Include a summary section explaining what was changed and why, and a test plan section with specific things to test. Keep it concise and professional.
+        prompt="Based on the following git diff and commits, generate a concise PR description for a pull request titled '$custom_title'. $AI_PR_SECTIONS $AI_PROFESSIONAL_TONE
 
-IMPORTANT: Do NOT include any footer, signature, or 'Generated with' message. Just provide the clean PR description content.
+$AI_NO_FOOTER_INSTRUCTION
 
 Commits:
 $commits
