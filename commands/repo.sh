@@ -24,6 +24,11 @@ Options:
     --apple               Also add Apple App Store and Fastlane secrets
     --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
     --rules               Apply branch protection rulesets (Main and Dev branches)
+                          Main: prevents deletion and force pushes
+                          Dev: prevents deletion and force pushes
+    --rules-strict        Apply strict branch protection rulesets
+                          Main: prevents deletion, force pushes, and requires pull requests
+                          Dev: prevents deletion and force pushes
     --pages, --gh-pages   Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)
     --release             Setup release workflow (copy release.yml workflow)
     --action              Shortcut for --release --pages --claude
@@ -39,7 +44,8 @@ Examples:
     jd repo --claude                           # Add CLAUDE_CODE_OAUTH_TOKEN as well
     jd repo --apple                            # Add Apple, Fastlane, and GH_PAT secrets
     jd repo --apple --suffix DEV               # Add Apple secrets with _DEV suffix
-    jd repo --rules                            # Apply branch protection rulesets
+    jd repo --rules                            # Apply default branch protection rulesets
+    jd repo --rules-strict                     # Apply strict rulesets (requires PRs on main)
     jd repo --pages                            # Setup GitHub Pages
     jd repo --release                          # Setup release workflow
     jd repo --action                           # Setup release, pages, and JD workflows
@@ -96,6 +102,7 @@ add_secret() {
 
 # Apply branch protection rulesets to the GitHub repository
 apply_rulesets() {
+    local strict_mode="${1:-false}"
     local rulesets_file="$JD_CLI_ROOT/data/rulesets.json"
 
     if [ ! -f "$rulesets_file" ]; then
@@ -112,9 +119,18 @@ apply_rulesets() {
         return 1
     fi
 
+    # Determine which Main branch ruleset to use
+    local main_key="main"
+    if [ "$strict_mode" = true ]; then
+        main_key="main_strict"
+        info "Using strict rulesets (requires pull requests for Main branch)"
+    else
+        info "Using default rulesets (no pull request requirement for Main branch)"
+    fi
+
     # Apply Main branch ruleset
     info "Creating ruleset for Main branch..."
-    local main_ruleset=$(jq -c '.main' "$rulesets_file")
+    local main_ruleset=$(jq -c ".$main_key" "$rulesets_file")
     if echo "$main_ruleset" | gh api "repos/$repo_full_name/rulesets" --method POST --input - >/dev/null 2>&1; then
         log "✓ Main branch ruleset applied"
     else
@@ -361,6 +377,7 @@ execute_command() {
     local add_claude=false
     local add_apple=false
     local add_rules=false
+    local rules_strict=false
     local add_pages=false
     local add_release=false
     local suffix=""
@@ -394,6 +411,11 @@ execute_command() {
                 ;;
             --rules)
                 add_rules=true
+                shift
+                ;;
+            --rules-strict)
+                add_rules=true
+                rules_strict=true
                 shift
                 ;;
             --pages|--gh-pages)
@@ -531,7 +553,7 @@ execute_command() {
 
     # Apply branch protection rulesets if requested
     if [ "$add_rules" = true ]; then
-        apply_rulesets || return 1
+        apply_rulesets "$rules_strict" || return 1
     fi
 
     # Setup GitHub Pages if requested

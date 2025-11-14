@@ -610,7 +610,7 @@
             </div>
             <div class="command-usage">
               jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix SUFFIX] [--rules]
-              [--pages] [--release] [--action] [--public] [--description DESC] [--no-init]
+              [--rules-strict] [--pages] [--release] [--action] [--public] [--description DESC] [--no-init]
             </div>
             <ul class="args-list">
               <li>
@@ -638,7 +638,11 @@
               </li>
               <li>
                 <span class="arg-name">--rules</span>
-                <span class="arg-desc">Apply branch protection rulesets for main and dev branches</span>
+                <span class="arg-desc">Apply default branch protection rulesets (main: prevents deletion and force pushes; dev: prevents deletion and force pushes)</span>
+              </li>
+              <li>
+                <span class="arg-name">--rules-strict</span>
+                <span class="arg-desc">Apply strict branch protection rulesets (main: prevents deletion, force pushes, and requires pull requests; dev: prevents deletion and force pushes)</span>
               </li>
               <li>
                 <span class="arg-name">--pages, --gh-pages</span>

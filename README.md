@@ -202,8 +202,11 @@ jd repo --extensions
 # Initialize with Claude Code OAuth token, workflows, and label
 jd repo --claude
 
-# Initialize with branch protection rulesets
+# Initialize with branch protection rulesets (default)
 jd repo --rules
+
+# Initialize with strict branch protection rulesets (requires PRs on main)
+jd repo --rules-strict
 
 # Setup GitHub Pages (workflow + docs/index.html)
 jd repo --pages
@@ -265,7 +268,13 @@ The repo command integrates with 1Password CLI to securely add GitHub secrets:
 
 **With `--rules` flag:**
 
-- Applies branch protection rulesets for `main` and `dev` branches
+- Applies default branch protection rulesets for `main` and `dev` branches
+- `main` branch: Prevents deletion and force pushes
+- `dev` branch: Prevents deletion and force pushes
+
+**With `--rules-strict` flag:**
+
+- Applies strict branch protection rulesets for `main` and `dev` branches
 - `main` branch: Prevents deletion, force pushes, and requires pull requests (merge/rebase allowed)
 - `dev` branch: Prevents deletion and force pushes
 

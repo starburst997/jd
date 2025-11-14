@@ -17,6 +17,28 @@
       },
       {
         "type": "non_fast_forward"
+      }
+    ],
+    "bypass_actors": []
+  },
+  "main_strict": {
+    "name": "Main",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "refs/heads/main"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
       },
       {
         "type": "pull_request",
