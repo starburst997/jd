@@ -13,7 +13,7 @@ _jd_completions() {
     local global_opts="-v --verbose -h --help --version"
 
     # All available commands
-    commands="dev pr merge repo npm venv requirements claude-github init update completion help"
+    commands="dev pr merge repo npm venv requirements cleanup claude-github init update completion help"
 
     # Complete first argument (command or global option)
     if [ $COMP_CWORD -eq 1 ]; then
@@ -58,13 +58,21 @@ _jd_completions() {
             local update_opts="--check -h --help"
             COMPREPLY=( $(compgen -W "${update_opts}" -- ${cur}) )
             ;;
+        cleanup)
+            local cleanup_opts="-p --path -i --include-hidden -n --dry-run -s --skip-mac-cleanup -h --help"
+            COMPREPLY=( $(compgen -W "${cleanup_opts}" -- ${cur}) )
+            ;;
         completion)
             # Only suggest shell types
             if [ $COMP_CWORD -eq 2 ]; then
                 COMPREPLY=( $(compgen -W "bash zsh -h --help" -- ${cur}) )
             fi
             ;;
-        venv|requirements|claude-github|init|help)
+        init)
+            local init_opts="--skip-deps --skip-completions --force -h --help"
+            COMPREPLY=( $(compgen -W "${init_opts}" -- ${cur}) )
+            ;;
+        venv|requirements|claude-github|help)
             # These commands only have --help
             COMPREPLY=( $(compgen -W "-h --help" -- ${cur}) )
             ;;

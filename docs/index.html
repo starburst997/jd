@@ -740,6 +740,35 @@
             </ul>
           </div>
 
+          <!-- cleanup -->
+          <div class="command-card">
+            <div class="command-name">jd cleanup</div>
+            <div class="command-desc">
+              Clean up node_modules directories and free disk space
+            </div>
+            <div class="command-usage">
+              jd cleanup [--path PATH] [--include-hidden] [--dry-run] [--skip-mac-cleanup]
+            </div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">--path PATH</span>
+                <span class="arg-desc">Path to start cleanup from (default: ~/Projects)</span>
+              </li>
+              <li>
+                <span class="arg-name">--include-hidden</span>
+                <span class="arg-desc">Include hidden directories (starting with .)</span>
+              </li>
+              <li>
+                <span class="arg-name">--dry-run</span>
+                <span class="arg-desc">Show what would be deleted without actually deleting</span>
+              </li>
+              <li>
+                <span class="arg-name">--skip-mac-cleanup</span>
+                <span class="arg-desc">Skip running mac-cleanup system cleanup</span>
+              </li>
+            </ul>
+          </div>
+
           <!-- claude-github -->
           <div class="command-card">
             <div class="command-name">jd claude-github</div>

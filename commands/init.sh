@@ -174,6 +174,7 @@ execute_command() {
         info "jd CLI can work with several optional tools:"
         echo "  • GitHub CLI (gh) - Required for 'jd pr' command"
         echo "  • DevContainer CLI - Required for 'jd dev' command"
+        echo "  • mac-cleanup - Required for 'jd cleanup' command (macOS only)"
         echo ""
 
         if confirm "Would you like to install/configure all dependencies now?" "y"; then
@@ -208,6 +209,7 @@ execute_command() {
     echo "  jd dev [template]    - Apply devcontainer template"
     echo "  jd pr [options]      - Create GitHub pull request"
     echo "  jd repo [options]    - Initialize GitHub repository"
+    echo "  jd cleanup [path]    - Clean up node_modules and free disk space"
     echo "  jd completion        - Setup shell completions"
     echo "  jd update            - Update jd CLI to latest version"
     echo "  jd --help            - Show all commands"

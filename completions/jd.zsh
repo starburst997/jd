@@ -18,6 +18,7 @@ _jd() {
         'npm:Setup npm package with OIDC trusted publishing'
         'venv:Create or activate Python virtual environment'
         'requirements:Generate requirements.txt from virtual environment'
+        'cleanup:Clean up node_modules and free disk space'
         'claude-github:Update Claude Code OAuth token across GitHub repos and 1Password'
         'init:Setup and install CLI dependencies (optional first-time setup)'
         'update:Update jd CLI to latest version'
@@ -101,12 +102,27 @@ _jd() {
                         '--check[Check for updates without installing]' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
+                cleanup)
+                    _arguments \
+                        '(-p --path)'{-p,--path}'[Path to start cleanup from (default: ~/Projects)]:path:_directories' \
+                        '(-i --include-hidden)'{-i,--include-hidden}'[Include hidden directories (starting with .)]' \
+                        '(-n --dry-run)'{-n,--dry-run}'[Show what would be deleted without actually deleting]' \
+                        '(-s --skip-mac-cleanup)'{-s,--skip-mac-cleanup}'[Skip running mac-cleanup system cleanup]' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
                 completion)
                     _arguments \
                         '1:shell:(bash zsh)' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
-                venv|requirements|claude-github|init|help)
+                init)
+                    _arguments \
+                        '--skip-deps[Skip dependency installation]' \
+                        '--skip-completions[Skip shell completion setup]' \
+                        '--force[Force reinstall all dependencies]' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                venv|requirements|claude-github|help)
                     _arguments \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;

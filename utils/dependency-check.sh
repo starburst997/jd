@@ -243,6 +243,25 @@ check_claude_cli() {
     return 0
 }
 
+# Check mac-cleanup
+check_mac_cleanup() {
+    local os=$(get_os)
+
+    # Only install on macOS
+    if [ "$os" != "macos" ]; then
+        debug "mac-cleanup is only for macOS, skipping"
+        return 0
+    fi
+
+    local install_cmd="brew install mac-cleanup-py"
+
+    if ! check_dependency "mac-cleanup" "mac-cleanup" "$install_cmd"; then
+        return 1
+    fi
+
+    return 0
+}
+
 # Check all dependencies for a specific command
 check_command_dependencies() {
     local cmd="$1"
@@ -264,6 +283,10 @@ check_command_dependencies() {
             check_gh_cli || return 1
             check_op_cli || return 1
             check_claude_cli || return 1
+            ;;
+        cleanup)
+            # mac-cleanup is optional, install if on macOS
+            check_mac_cleanup || true
             ;;
         *)
             # No specific dependencies
@@ -303,6 +326,16 @@ install_all_dependencies() {
     if ! check_gh_cli; then
         warning "Could not install/configure GitHub CLI"
         failed=true
+    fi
+
+    # Install mac-cleanup (macOS only)
+    if [ "$(get_os)" = "macos" ]; then
+        echo ""
+        info "Checking mac-cleanup..."
+        if ! check_mac_cleanup; then
+            warning "Could not install mac-cleanup (optional)"
+            # Don't set failed=true as it's optional
+        fi
     fi
 
     echo ""

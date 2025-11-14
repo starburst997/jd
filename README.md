@@ -15,6 +15,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 - **`jd update`** - Self-update to latest version
 - **`jd venv`** - Create and manage Python virtual environments
 - **`jd requirements`** - Generate requirements.txt from active virtual environment
+- **`jd cleanup`** - Clean up node_modules directories and free disk space
 - **`jd claude-github`** - Update Claude Code OAuth token across all GitHub repositories and 1Password
 
 ## Quick Start
@@ -356,6 +357,53 @@ Requirements workflow:
 3. Generate requirements: `jd requirements`
 4. Commit requirements.txt to your repository
 
+### Clean Up Development Files
+
+```bash
+# Clean node_modules from default ~/Projects directory
+jd cleanup
+
+# Clean from a custom path
+jd cleanup --path ~/Work
+
+# Include hidden directories (starting with .)
+jd cleanup --include-hidden
+
+# Preview what would be deleted without actually deleting
+jd cleanup --dry-run
+
+# Skip mac-cleanup system cleanup
+jd cleanup --skip-mac-cleanup
+
+# Full example
+jd cleanup --path ~/Dev --include-hidden --dry-run
+```
+
+The cleanup command helps free disk space by:
+
+- **Recursively finding all node_modules** directories in the specified path
+- **Calculating total space** that will be freed
+- **Showing progress** as directories are removed
+- **Running mac-cleanup** for additional system cleanup (macOS only)
+
+Features:
+
+- Default path is `~/Projects` (customizable with `--path`)
+- Skips hidden directories by default (use `--include-hidden` to include)
+- Shows size of each directory being removed
+- Dry-run mode to preview changes before deletion
+- Integrates with `mac-cleanup` for comprehensive system cleanup
+- Tracks and reports total space freed
+
+**macOS System Cleanup:**
+
+When run on macOS, the command also runs `mac-cleanup` which cleans:
+- Homebrew cache
+- System caches
+- Log files
+- Temporary files
+- And more system cleanup tasks
+
 ### Update Claude Code OAuth Token
 
 ```bash
@@ -420,6 +468,12 @@ When you run a command that needs a dependency, jd CLI will:
 - Auto-installs via npm
 - Falls back to local installation if global fails
 
+**mac-cleanup** - For `jd cleanup` command (macOS only)
+
+- Auto-installs via brew
+- Performs comprehensive system cleanup on macOS
+- Optional component - cleanup still works without it
+
 **Docker** - For dev containers (optional)
 
 - Provides installation instructions
@@ -467,6 +521,7 @@ jd/
 │   ├── update.sh            # Self-update command
 │   ├── venv.sh              # Python virtual environment command
 │   ├── requirements.sh      # Python requirements generator
+│   ├── cleanup.sh           # Cleanup node_modules and free disk space
 │   └── claude-github.sh     # Claude Code OAuth token updater
 ├── data/
 │   └── rulesets.json        # Branch protection ruleset definitions
