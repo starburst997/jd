@@ -10,6 +10,7 @@ Usage: jd merge [OPTIONS]
 
 Options:
     --branch BRANCH   Branch name to find PR for (defaults to current branch)
+                      Note: Only auto-switches to default branch if you're currently on the specified branch
     --type TYPE       Merge type: squash, merge, or rebase (auto-detects: squash for features, merge for dev→main)
     --clean           Only cleanup temp branches (no merge)
     -h, --help        Show this help message
@@ -20,7 +21,7 @@ Features:
     - Deletes both remote and local branches after successful merge
     - Preserves default branch and main branch (never deletes them locally)
     - Fetches latest changes from origin
-    - Switches to updated default branch
+    - Switches to updated default branch (only when merging the current branch)
     - Worktree-aware: creates temp branch if default branch is checked out elsewhere
     - Auto-cleanup of old temp branches
     - Special case: merging default branch (e.g., dev) to main is supported
@@ -32,15 +33,19 @@ Behavior:
     - On main branch: Error (cannot merge main to itself)
 
 Examples:
-    jd merge                        # Auto-merge PR (squash for features, merge for dev→main)
+    jd merge                        # Auto-merge PR (squash for features, merge for dev→main), switches to default branch
     jd merge --type squash          # Force squash merge (e.g., for dev→main if needed)
     jd merge --type rebase          # Rebase merge PR for current branch
-    jd merge --branch feature-x     # Squash merge PR for specific branch
+    jd merge --branch feature-x     # Squash merge PR for specific branch, stays on current branch (unless you're on feature-x)
     jd merge --clean                # Only cleanup old temp branches
 
 Workflow Examples:
     # On feature branch "feature-x" with default branch "dev"
     jd merge                        # Squash merges feature-x → dev, switches to dev
+    jd merge --branch feature-x     # Same as above (you're on feature-x)
+
+    # On "main" branch, want to merge "feature-x" branch without switching
+    jd merge --branch feature-x     # Squash merges feature-x → dev, stays on main
 
     # On default branch "dev" (not main)
     jd merge                        # Regular merge dev → main, stays on dev
@@ -167,12 +172,14 @@ execute_command() {
     local branch=""
     local merge_type=""  # Will be determined later based on context
     local clean_only=false
+    local branch_flag_used=false  # Track if --branch was explicitly provided
 
     # Parse options
     while [[ $# -gt 0 ]]; do
         case $1 in
             --branch)
                 branch="$2"
+                branch_flag_used=true
                 shift 2
                 ;;
             --type)
@@ -326,11 +333,14 @@ execute_command() {
         return 0
     fi
 
-    if [ -z "$1" ] || [ "$1" != "--branch" ]; then
-        info "Updating local repository..."
+    # Get current branch to check if we should auto-switch
+    local current_branch=$(get_current_branch)
 
-        # Get current branch to determine fetch strategy
-        local current_branch=$(get_current_branch)
+    # Only auto-switch if:
+    # 1. No --branch flag was used (default behavior), OR
+    # 2. --branch was used but matches the current branch (user is on the branch they're merging)
+    if [ "$branch_flag_used" = false ] || [ "$branch" = "$current_branch" ]; then
+        info "Updating local repository..."
 
         # Fetch latest changes
         if [ "$current_branch" = "$default_branch" ]; then
