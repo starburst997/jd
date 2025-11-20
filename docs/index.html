@@ -69,16 +69,28 @@
         white-space: pre;
         display: inline-block;
         text-align: left;
-        transform: scaleY(1.20);
+        transform: scaleY(1.2);
         transform-origin: center;
       }
 
-      .ascii-logo .line1 { color: #17bbdd; }
-      .ascii-logo .line2 { color: #17bbdd; }
-      .ascii-logo .line3 { color: rgb(40, 198, 209); }
-      .ascii-logo .line4 { color: rgb(69, 204, 180); }
-      .ascii-logo .line5 { color: rgb(114, 207, 154); }
-      .ascii-logo .line6 { color: #98d280; }
+      .ascii-logo .line1 {
+        color: #17bbdd;
+      }
+      .ascii-logo .line2 {
+        color: #17bbdd;
+      }
+      .ascii-logo .line3 {
+        color: rgb(40, 198, 209);
+      }
+      .ascii-logo .line4 {
+        color: rgb(69, 204, 180);
+      }
+      .ascii-logo .line5 {
+        color: rgb(114, 207, 154);
+      }
+      .ascii-logo .line6 {
+        color: #98d280;
+      }
       .ascii-logo .subtitle {
         color: #96969d;
         opacity: 0.7;
@@ -365,13 +377,15 @@
 
     <section class="hero">
       <div class="container">
-        <div class="ascii-logo"><span class="line1">     ██╗██████╗ </span>
-<span class="line2">     ██║██╔══██╗</span>
-<span class="line3">     ██║██║  ██║</span>
-<span class="line4">██   ██║██║  ██║</span>
-<span class="line5">╚█████╔╝██████╔╝</span>
-<span class="line6"> ╚════╝ ╚═════╝ </span>
-<span class="subtitle">   Personal Dev Toolkit</span></div>
+        <div class="ascii-logo">
+          <span class="line1"> ██╗██████╗ </span>
+          <span class="line2"> ██║██╔══██╗</span>
+          <span class="line3"> ██║██║ ██║</span>
+          <span class="line4">██ ██║██║ ██║</span>
+          <span class="line5">╚█████╔╝██████╔╝</span>
+          <span class="line6"> ╚════╝ ╚═════╝ </span>
+          <span class="subtitle"> Personal Dev Toolkit</span>
+        </div>
         <p class="tagline">
           Personal development toolkit for streamlined workflows with automated
           dependency management
@@ -525,11 +539,13 @@
           <div class="command-card">
             <div class="command-name">jd pr</div>
             <div class="command-desc">
-              Create GitHub pull requests with AI-generated title and description
+              Create GitHub pull requests with AI-generated title and
+              description
             </div>
             <div class="command-usage">
-              jd pr [--draft] [--auto-draft] [--base BRANCH] [--web] [--title TITLE] [--body BODY]
-              [--no-claude] [--model MODEL] [--reviewers USERS] [--labels LABELS]
+              jd pr [--draft] [--auto-draft] [--base BRANCH] [--web] [--title
+              TITLE] [--body BODY] [--no-claude] [--model MODEL] [--reviewers
+              USERS] [--labels LABELS]
             </div>
             <ul class="args-list">
               <li>
@@ -538,7 +554,9 @@
               </li>
               <li>
                 <span class="arg-name">--auto-draft</span>
-                <span class="arg-desc">Auto-detect draft from branch name (wip/draft prefixes)</span>
+                <span class="arg-desc"
+                  >Auto-detect draft from branch name (wip/draft prefixes)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--base BRANCH</span>
@@ -552,7 +570,10 @@
               </li>
               <li>
                 <span class="arg-name">--title TITLE</span>
-                <span class="arg-desc">Custom PR title (AI generates description if not provided)</span>
+                <span class="arg-desc"
+                  >Custom PR title (AI generates description if not
+                  provided)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--body BODY</span>
@@ -560,11 +581,15 @@
               </li>
               <li>
                 <span class="arg-name">--no-claude</span>
-                <span class="arg-desc">Disable Claude AI generation (use fallback)</span>
+                <span class="arg-desc"
+                  >Disable Claude AI generation (use fallback)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--model MODEL</span>
-                <span class="arg-desc">Claude model: sonnet (default), haiku, or opus</span>
+                <span class="arg-desc"
+                  >Claude model: sonnet (default), haiku, or opus</span
+                >
               </li>
               <li>
                 <span class="arg-name">--reviewers USERS</span>
@@ -581,7 +606,8 @@
           <div class="command-card">
             <div class="command-name">jd merge</div>
             <div class="command-desc">
-              Merge GitHub pull request and cleanup branches with worktree support (squash by default)
+              Merge GitHub pull request and cleanup branches with worktree
+              support (squash by default)
             </div>
             <div class="command-usage">
               jd merge [--branch BRANCH] [--type TYPE] [--clean]
@@ -589,15 +615,21 @@
             <ul class="args-list">
               <li>
                 <span class="arg-name">--branch BRANCH</span>
-                <span class="arg-desc">Branch name to find PR for (defaults to current branch)</span>
+                <span class="arg-desc"
+                  >Branch name to find PR for (defaults to current branch)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--type TYPE</span>
-                <span class="arg-desc">Merge type: squash (default), merge, or rebase</span>
+                <span class="arg-desc"
+                  >Merge type: squash (default), merge, or rebase</span
+                >
               </li>
               <li>
                 <span class="arg-name">--clean</span>
-                <span class="arg-desc">Only cleanup old temporary branches (no merge)</span>
+                <span class="arg-desc"
+                  >Only cleanup old temporary branches (no merge)</span
+                >
               </li>
             </ul>
           </div>
@@ -609,8 +641,9 @@
               Initialize GitHub repository and configure secrets from 1Password
             </div>
             <div class="command-usage">
-              jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix SUFFIX] [--rules]
-              [--rules-strict] [--pages] [--release] [--action] [--public] [--description DESC] [--no-init]
+              jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix
+              SUFFIX] [--rules] [--rules-strict] [--pages] [--release]
+              [--action] [--public] [--description DESC] [--no-init]
             </div>
             <ul class="args-list">
               <li>
@@ -626,35 +659,58 @@
               </li>
               <li>
                 <span class="arg-name">--claude</span>
-                <span class="arg-desc">Add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows, and create JD label</span>
+                <span class="arg-desc"
+                  >Add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows, and
+                  create JD label</span
+                >
               </li>
               <li>
                 <span class="arg-name">--apple</span>
-                <span class="arg-desc">Add Apple App Store, Fastlane, and GitHub PAT secrets</span>
+                <span class="arg-desc"
+                  >Add Apple App Store, Fastlane, and GitHub PAT secrets</span
+                >
               </li>
               <li>
                 <span class="arg-name">--suffix SUFFIX</span>
-                <span class="arg-desc">Add suffix to APPSTORE_* and MATCH_* secrets (use with --apple)</span>
+                <span class="arg-desc"
+                  >Add suffix to APPSTORE_* and MATCH_* secrets (use with
+                  --apple)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--rules</span>
-                <span class="arg-desc">Apply default branch protection rulesets (main: prevents deletion and force pushes; dev: prevents deletion and force pushes)</span>
+                <span class="arg-desc"
+                  >Apply default branch protection rulesets (main: prevents
+                  deletion and force pushes; dev: prevents deletion and force
+                  pushes)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--rules-strict</span>
-                <span class="arg-desc">Apply strict branch protection rulesets (main: prevents deletion, force pushes, and requires pull requests; dev: prevents deletion and force pushes)</span>
+                <span class="arg-desc"
+                  >Apply strict branch protection rulesets (main: prevents
+                  deletion, force pushes, and requires pull requests; dev:
+                  prevents deletion and force pushes)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--pages, --gh-pages</span>
-                <span class="arg-desc">Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)</span>
+                <span class="arg-desc"
+                  >Setup GitHub Pages (copy gh-pages.yml workflow and
+                  docs/index.html)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--release</span>
-                <span class="arg-desc">Setup release workflow (copy release.yml workflow)</span>
+                <span class="arg-desc"
+                  >Setup release workflow (copy release.yml workflow)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--action</span>
-                <span class="arg-desc">Shortcut for --release --pages --claude</span>
+                <span class="arg-desc"
+                  >Shortcut for --release --pages --claude</span
+                >
               </li>
               <li>
                 <span class="arg-name">--public</span>
@@ -751,24 +807,33 @@
               Clean up node_modules directories and free disk space
             </div>
             <div class="command-usage">
-              jd cleanup [--path PATH] [--include-hidden] [--dry-run] [--skip-mac-cleanup]
+              jd cleanup [--path PATH] [--include-hidden] [--dry-run]
+              [--skip-mac-cleanup]
             </div>
             <ul class="args-list">
               <li>
                 <span class="arg-name">--path PATH</span>
-                <span class="arg-desc">Path to start cleanup from (default: ~/Projects)</span>
+                <span class="arg-desc"
+                  >Path to start cleanup from (default: ~/Projects)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--include-hidden</span>
-                <span class="arg-desc">Include hidden directories (starting with .)</span>
+                <span class="arg-desc"
+                  >Include hidden directories (starting with .)</span
+                >
               </li>
               <li>
                 <span class="arg-name">--dry-run</span>
-                <span class="arg-desc">Show what would be deleted without actually deleting</span>
+                <span class="arg-desc"
+                  >Show what would be deleted without actually deleting</span
+                >
               </li>
               <li>
                 <span class="arg-name">--skip-mac-cleanup</span>
-                <span class="arg-desc">Skip running mac-cleanup system cleanup</span>
+                <span class="arg-desc"
+                  >Skip running mac-cleanup system cleanup</span
+                >
               </li>
             </ul>
           </div>
@@ -794,6 +859,36 @@
                 <span class="arg-desc"
                   >Prerequisites: GitHub CLI (gh), 1Password CLI (op), Claude
                   Code CLI (claude)</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- pg -->
+          <div class="command-card">
+            <div class="command-name">jd pg</div>
+            <div class="command-desc">
+              Port-forward to PostgreSQL database cluster on localhost:5432
+            </div>
+            <div class="command-usage">jd pg</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-desc"
+                  >Creates a port-forward connection from localhost:5432 to the
+                  postgres-rw service in the postgres namespace. Press Ctrl+C to
+                  stop the port-forward.</span
+                >
+              </li>
+              <li>
+                <span class="arg-desc"
+                  >Prerequisites: kubectl CLI, active Kubernetes context,
+                  postgres namespace with postgres-rw service</span
+                >
+              </li>
+              <li>
+                <span class="arg-desc"
+                  >Connect using: psql -h localhost -p 5432 -U &lt;username&gt;
+                  &lt;database&gt;</span
                 >
               </li>
             </ul>

@@ -5,6 +5,7 @@
     "devcontainers",
     "jdboivin",
     "OVSX",
+    "psql",
     "venv",
     "worktree"
   ]

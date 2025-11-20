@@ -20,6 +20,7 @@ _jd() {
         'requirements:Generate requirements.txt from virtual environment'
         'cleanup:Clean up node_modules and free disk space'
         'claude-github:Update Claude Code OAuth token across GitHub repos and 1Password'
+        'pg:Port-forward to PostgreSQL database cluster'
         'init:Setup and install CLI dependencies (optional first-time setup)'
         'update:Update jd CLI to latest version'
         'completion:Generate shell completion scripts'
@@ -123,7 +124,7 @@ _jd() {
                         '--force[Force reinstall all dependencies]' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
-                venv|requirements|claude-github|help)
+                venv|requirements|claude-github|pg|help)
                     _arguments \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;

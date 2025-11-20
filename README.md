@@ -17,6 +17,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 - **`jd requirements`** - Generate requirements.txt from active virtual environment
 - **`jd cleanup`** - Clean up node_modules directories and free disk space
 - **`jd claude-github`** - Update Claude Code OAuth token across all GitHub repositories and 1Password
+- **`jd pg`** - Port-forward to PostgreSQL database cluster on localhost:5432
 
 ## Quick Start
 
@@ -178,6 +179,7 @@ Smart merge features:
 - **Handles uncommitted changes** gracefully
 
 Worktree workflow:
+
 1. When default branch is checked out in another worktree:
    - Creates unique temp branch (e.g., `main-temp-1`) based on latest `origin/main`
    - Switches to temp branch automatically
@@ -407,6 +409,7 @@ Features:
 **macOS System Cleanup:**
 
 When run on macOS, the command also runs `mac-cleanup` which cleans:
+
 - Homebrew cache
 - System caches
 - Log files
@@ -437,6 +440,48 @@ This command automates the process of updating Claude Code OAuth tokens (which e
 **Workflow:**
 
 The command will guide you through each step, showing authentication instructions in your browser, then systematically update all repositories that have the Claude Code OAuth token configured.
+
+### Port-Forward to PostgreSQL Database
+
+```bash
+# Start port-forward to PostgreSQL on localhost:5432
+jd pg
+
+# The command will:
+# - Check for kubectl installation
+# - Verify Kubernetes context is active
+# - Check that postgres namespace and service exist
+# - Forward local port 5432 to postgres-rw service
+# - Keep running until you press Ctrl+C
+```
+
+**Prerequisites:**
+
+- `kubectl` - Kubernetes CLI tool (auto-installed via dependency check)
+- Active Kubernetes context with access to postgres namespace
+- PostgreSQL cluster with `postgres-rw` service in `postgres` namespace
+
+**Usage:**
+
+Once the port-forward is active, connect to your database:
+
+```bash
+# In another terminal window
+psql -h localhost -p 5432 -U <username> <database>
+
+# Or use any PostgreSQL client
+pgcli -h localhost -p 5432 -U <username> <database>
+```
+
+**Running in background:**
+
+```bash
+# Start in background
+jd pg &
+
+# Stop when done
+pkill -f "kubectl port-forward.*postgres"
+```
 
 ## Automated Dependency Management
 
@@ -476,6 +521,11 @@ When you run a command that needs a dependency, jd CLI will:
 
 - Auto-installs via npm
 - Falls back to local installation if global fails
+
+**kubectl** - For `jd pg` command
+
+- Required for Kubernetes port-forwarding
+- Must be configured with access to your cluster
 
 **mac-cleanup** - For `jd cleanup` command (macOS only)
 
@@ -531,7 +581,8 @@ jd/
 │   ├── venv.sh              # Python virtual environment command
 │   ├── requirements.sh      # Python requirements generator
 │   ├── cleanup.sh           # Cleanup node_modules and free disk space
-│   └── claude-github.sh     # Claude Code OAuth token updater
+│   ├── claude-github.sh     # Claude Code OAuth token updater
+│   └── pg.sh                # PostgreSQL port-forward command
 ├── data/
 │   └── rulesets.json        # Branch protection ruleset definitions
 ├── utils/

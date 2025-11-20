@@ -262,6 +262,39 @@ check_mac_cleanup() {
     return 0
 }
 
+# Check kubectl
+check_kubectl() {
+    local os=$(get_os)
+    local install_cmd=""
+
+    case "$os" in
+        macos)
+            install_cmd="brew install kubectl"
+            ;;
+        linux)
+            if command_exists snap; then
+                install_cmd="sudo snap install kubectl --classic"
+            elif command_exists apt-get; then
+                install_cmd="curl -LO 'https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl' && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"
+            else
+                install_cmd="Visit https://kubernetes.io/docs/tasks/tools/"
+            fi
+            ;;
+        windows)
+            install_cmd="choco install kubernetes-cli or scoop install kubectl"
+            ;;
+        *)
+            install_cmd="Visit https://kubernetes.io/docs/tasks/tools/"
+            ;;
+    esac
+
+    if ! check_dependency "kubectl" "kubectl" "$install_cmd"; then
+        return 1
+    fi
+
+    return 0
+}
+
 # Check all dependencies for a specific command
 check_command_dependencies() {
     local cmd="$1"
@@ -287,6 +320,9 @@ check_command_dependencies() {
         cleanup)
             # mac-cleanup is optional, install if on macOS
             check_mac_cleanup || true
+            ;;
+        pg)
+            check_kubectl || return 1
             ;;
         *)
             # No specific dependencies

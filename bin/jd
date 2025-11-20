@@ -35,6 +35,7 @@ Commands:
     requirements      Generate requirements.txt from virtual environment
     cleanup [path]    Clean up node_modules and free disk space
     claude-github     Update Claude Code OAuth token across GitHub repos and 1Password
+    pg                Port-forward to PostgreSQL database cluster
     init              Setup and install CLI dependencies (optional first-time setup)
     completion        Generate shell completion scripts
     update            Update jd CLI to latest version
@@ -58,6 +59,7 @@ Examples:
     jd cleanup --path ~/Work  # Clean node_modules from custom path
     jd cleanup --dry-run      # Preview what would be deleted
     jd claude-github         # Update Claude OAuth token everywhere
+    jd pg                    # Port-forward to PostgreSQL on localhost:5432
 
 For more information about a specific command, run:
     jd COMMAND --help
