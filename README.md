@@ -12,6 +12,7 @@ This is just a collection of cli commands I find personally useful and tailored 
 - **`jd merge`** - Merge GitHub pull requests and cleanup branches with worktree support
 - **`jd repo`** - Initialize GitHub repository and configure secrets from 1Password
 - **`jd npm`** - Setup npm package with OIDC trusted publishing
+- **`jd release`** - Automate release process: merge dev→main, bump versions, create GitHub release
 - **`jd update`** - Self-update to latest version
 - **`jd venv`** - Create and manage Python virtual environments
 - **`jd requirements`** - Generate requirements.txt from active virtual environment
@@ -483,6 +484,47 @@ jd pg &
 pkill -f "kubectl port-forward.*postgres"
 ```
 
+### Automate Release Process
+
+```bash
+# Run full release process
+jd release
+
+# Preview changes without executing
+jd release --dry-run
+```
+
+This command automates the entire release workflow:
+
+1. **Checks for uncommitted changes** - ensures clean working directory
+2. **Merges dev→main** - normal merge (no rebase) with automatic conflict detection
+3. **Switches back to dev** - continues work on development branch
+4. **Increments MINOR version** - bumps version in root `package.json` (e.g., `2025.7.0` → `2025.8.0`)
+5. **Updates app versions** - syncs version to `apps/*/app.config.ts` and `apps/*/package.json`
+6. **Commits and pushes** - creates "Version bump" commit on dev branch
+7. **Creates GitHub release** - generates release with auto-generated notes on main branch
+
+**Version Management:**
+
+- Root `package.json` is the source of truth for version numbers
+- Uses YEAR.MINOR.PATCH format (e.g., `2025.7.0`)
+- Automatically increments MINOR version (second number)
+- Resets PATCH to 0 after increment
+- Searches and updates version in:
+  - `apps/*/app.config.ts` - Expo configuration files
+  - `apps/*/package.json` - App-specific package files
+
+**Prerequisites:**
+
+- GitHub CLI (`gh`) - authenticated
+- Must be in a git repository with `main` and default branches
+- No uncommitted changes
+- Root `package.json` must exist with version field
+
+**Workflow:**
+
+The release command is designed for monorepos with multiple apps in the `apps/` directory. It ensures all app configurations stay in sync with the root version, then creates a GitHub release with automatically generated release notes based on merged PRs and commits.
+
 ## Automated Dependency Management
 
 The jd CLI automatically handles dependency installation:
@@ -574,14 +616,17 @@ jd/
 ├── commands/
 │   ├── dev.sh               # DevContainer command
 │   ├── pr.sh                # GitHub PR command
+│   ├── merge.sh             # GitHub PR merge command
 │   ├── repo.sh              # GitHub repository initialization command
 │   ├── npm.sh               # npm OIDC setup command
+│   ├── release.sh           # Release automation command
 │   ├── init.sh              # Setup command
 │   ├── update.sh            # Self-update command
 │   ├── venv.sh              # Python virtual environment command
 │   ├── requirements.sh      # Python requirements generator
 │   ├── cleanup.sh           # Cleanup node_modules and free disk space
 │   ├── claude-github.sh     # Claude Code OAuth token updater
+│   ├── completion.sh        # Shell completion generator
 │   └── pg.sh                # PostgreSQL port-forward command
 ├── data/
 │   └── rulesets.json        # Branch protection ruleset definitions

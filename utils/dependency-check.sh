@@ -324,6 +324,9 @@ check_command_dependencies() {
         pg)
             check_kubectl || return 1
             ;;
+        release)
+            check_gh_cli || return 1
+            ;;
         *)
             # No specific dependencies
             ;;

@@ -21,6 +21,7 @@ _jd() {
         'cleanup:Clean up node_modules and free disk space'
         'claude-github:Update Claude Code OAuth token across GitHub repos and 1Password'
         'pg:Port-forward to PostgreSQL database cluster'
+        'release:Automate release process: merge dev→main, bump versions, create GitHub release'
         'init:Setup and install CLI dependencies (optional first-time setup)'
         'update:Update jd CLI to latest version'
         'completion:Generate shell completion scripts'
@@ -122,6 +123,11 @@ _jd() {
                         '--skip-deps[Skip dependency installation]' \
                         '--skip-completions[Skip shell completion setup]' \
                         '--force[Force reinstall all dependencies]' \
+                        '(-h --help)'{-h,--help}'[Show help message]'
+                    ;;
+                release)
+                    _arguments \
+                        '--dry-run[Preview changes without executing them]' \
                         '(-h --help)'{-h,--help}'[Show help message]'
                     ;;
                 venv|requirements|claude-github|pg|help)

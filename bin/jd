@@ -36,6 +36,7 @@ Commands:
     cleanup [path]    Clean up node_modules and free disk space
     claude-github     Update Claude Code OAuth token across GitHub repos and 1Password
     pg                Port-forward to PostgreSQL database cluster
+    release [options] Automate release process: merge dev->main, bump versions, create GitHub release
     init              Setup and install CLI dependencies (optional first-time setup)
     completion        Generate shell completion scripts
     update            Update jd CLI to latest version
@@ -60,6 +61,8 @@ Examples:
     jd cleanup --dry-run      # Preview what would be deleted
     jd claude-github         # Update Claude OAuth token everywhere
     jd pg                    # Port-forward to PostgreSQL on localhost:5432
+    jd release               # Run full release process
+    jd release --dry-run     # Preview release without making changes
 
 For more information about a specific command, run:
     jd COMMAND --help

@@ -378,13 +378,13 @@
     <section class="hero">
       <div class="container">
         <div class="ascii-logo">
-          <span class="line1"> ██╗██████╗ </span>
-          <span class="line2"> ██║██╔══██╗</span>
-          <span class="line3"> ██║██║ ██║</span>
-          <span class="line4">██ ██║██║ ██║</span>
+          <span class="line1">     ██╗██████╗ </span>
+          <span class="line2">     ██║██╔══██╗</span>
+          <span class="line3">     ██║██║  ██║</span>
+          <span class="line4">██   ██║██║  ██║</span>
           <span class="line5">╚█████╔╝██████╔╝</span>
           <span class="line6"> ╚════╝ ╚═════╝ </span>
-          <span class="subtitle"> Personal Dev Toolkit</span>
+          <span class="subtitle">   Personal Dev Toolkit</span></div>
         </div>
         <p class="tagline">
           Personal development toolkit for streamlined workflows with automated
@@ -889,6 +889,37 @@
                 <span class="arg-desc"
                   >Connect using: psql -h localhost -p 5432 -U &lt;username&gt;
                   &lt;database&gt;</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- release -->
+          <div class="command-card">
+            <div class="command-name">jd release</div>
+            <div class="command-desc">
+              Automate release process: merge dev→main, bump versions, create GitHub release
+            </div>
+            <div class="command-usage">jd release [--dry-run]</div>
+            <ul class="args-list">
+              <li>
+                <span class="arg-name">--dry-run</span>
+                <span class="arg-desc"
+                  >Preview changes without executing them</span
+                >
+              </li>
+              <li>
+                <span class="arg-desc"
+                  >Merges dev into main, increments MINOR version in root package.json
+                  (e.g., 2025.7.0 → 2025.8.0), updates versions in apps/*/app.config.ts
+                  and apps/*/package.json, commits and pushes "Version bump" to dev,
+                  and creates GitHub release with auto-generated notes on main</span
+                >
+              </li>
+              <li>
+                <span class="arg-desc"
+                  >Prerequisites: GitHub CLI (gh), clean working directory, root
+                  package.json with version field</span
                 >
               </li>
             </ul>

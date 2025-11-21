@@ -13,7 +13,7 @@ _jd_completions() {
     local global_opts="-v --verbose -h --help --version"
 
     # All available commands
-    commands="dev pr merge repo npm venv requirements cleanup claude-github pg init update completion help"
+    commands="dev pr merge repo npm venv requirements cleanup claude-github pg release init update completion help"
 
     # Complete first argument (command or global option)
     if [ $COMP_CWORD -eq 1 ]; then
@@ -71,6 +71,10 @@ _jd_completions() {
         init)
             local init_opts="--skip-deps --skip-completions --force -h --help"
             COMPREPLY=( $(compgen -W "${init_opts}" -- ${cur}) )
+            ;;
+        release)
+            local release_opts="--dry-run -h --help"
+            COMPREPLY=( $(compgen -W "${release_opts}" -- ${cur}) )
             ;;
         venv|requirements|claude-github|pg|help)
             # These commands only have --help
