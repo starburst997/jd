@@ -283,47 +283,102 @@ execute_command() {
 
     if [ -z "$pr_number" ]; then
         if [ -n "$target_branch" ]; then
-            error "No open PR found from $branch to $target_branch"
-            info "Create a PR first with: jd pr --base $target_branch"
+            warning "No open PR found from $branch to $target_branch"
         else
-            error "No open PR found for branch: $branch"
-            info "Create a PR first with: jd pr"
+            warning "No open PR found for branch: $branch"
         fi
-        return 1
+
+        # On feature branches, prompt user to continue
+        if [ "$is_dev_to_main" = false ]; then
+            if ! confirm "Continue with git merge?" "n"; then
+                return 1
+            fi
+        fi
+
+        # Do a regular git merge
+        local merge_target="$default_branch"
+        [ -n "$target_branch" ] && merge_target="$target_branch"
+
+        info "Merging $branch into $merge_target..."
+
+        # Stash any uncommitted changes
+        local stashed=false
+        if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+            git stash push -m "jd-merge-temp" 2>/dev/null && stashed=true
+        fi
+
+        # Checkout target, pull, merge, push
+        git fetch origin "$merge_target" 2>/dev/null
+        if ! git checkout "$merge_target" 2>/dev/null; then
+            error "Failed to checkout $merge_target"
+            [ "$stashed" = true ] && git stash pop 2>/dev/null
+            return 1
+        fi
+
+        git pull origin "$merge_target" 2>/dev/null
+
+        if ! git merge "$branch" --no-edit; then
+            error "Failed to merge $branch into $merge_target"
+            info "Resolve conflicts, then run: git add . && git commit && git push"
+            [ "$stashed" = true ] && info "Your stashed changes: git stash pop"
+            return 1
+        fi
+
+        if ! git push origin "$merge_target"; then
+            error "Failed to push $merge_target"
+            info "You may need to create a PR instead: jd pr --base $merge_target"
+            [ "$stashed" = true ] && git stash pop 2>/dev/null
+            return 1
+        fi
+
+        log "Merged $branch into $merge_target"
+
+        # Delete remote branch (if not default or main)
+        if [ "$branch" != "$default_branch" ] && [ "$branch" != "main" ]; then
+            git push origin --delete "$branch" 2>/dev/null || warning "Failed to delete remote branch"
+        fi
+
+        # Switch back to original branch if merging dev→main
+        if [ "$is_dev_to_main" = true ]; then
+            git checkout "$default_branch" 2>/dev/null
+        fi
+
+        # Restore stashed changes
+        [ "$stashed" = true ] && git stash pop 2>/dev/null
+    else
+        log "Found PR #$pr_number"
+
+        # Get PR details
+        local pr_title=$(gh pr view "$pr_number" --json title --jq '.title' 2>/dev/null)
+        info "PR: $pr_title"
+
+        # Merge the PR
+        info "Merging PR #$pr_number (type: $merge_type)..."
+
+        # Build merge arguments
+        local merge_args=("$pr_number" "--$merge_type")
+
+        # Only delete branch if NOT merging dev→main (we want to keep dev branch)
+        if [ "$is_dev_to_main" = false ]; then
+            merge_args+=(--delete-branch)
+        fi
+
+        # For squash merges, use PR title as commit subject
+        if [ "$merge_type" = "squash" ]; then
+            merge_args+=(--subject "$pr_title (#$pr_number)")
+        fi
+
+        if ! run_with_error_capture "Failed to merge PR #$pr_number" gh pr merge "${merge_args[@]}"; then
+            info "Common issues:"
+            info "  - PR has merge conflicts that need to be resolved"
+            info "  - PR checks/CI are still running or have failed"
+            info "  - You don't have permission to merge"
+            info "  - Uncommitted changes in your working directory (already warned above)"
+            return 1
+        fi
+
+        log "PR merged successfully"
     fi
-
-    log "Found PR #$pr_number"
-
-    # Get PR details
-    local pr_title=$(gh pr view "$pr_number" --json title --jq '.title' 2>/dev/null)
-    info "PR: $pr_title"
-
-    # Merge the PR
-    info "Merging PR #$pr_number (type: $merge_type)..."
-
-    # Build merge arguments
-    local merge_args=("$pr_number" "--$merge_type")
-
-    # Only delete branch if NOT merging dev→main (we want to keep dev branch)
-    if [ "$is_dev_to_main" = false ]; then
-        merge_args+=(--delete-branch)
-    fi
-
-    # For squash merges, use PR title as commit subject
-    if [ "$merge_type" = "squash" ]; then
-        merge_args+=(--subject "$pr_title (#$pr_number)")
-    fi
-
-    if ! run_with_error_capture "Failed to merge PR #$pr_number" gh pr merge "${merge_args[@]}"; then
-        info "Common issues:"
-        info "  - PR has merge conflicts that need to be resolved"
-        info "  - PR checks/CI are still running or have failed"
-        info "  - You don't have permission to merge"
-        info "  - Uncommitted changes in your working directory (already warned above)"
-        return 1
-    fi
-
-    log "PR merged successfully"
 
     # Only auto-switch if we used the current branch (not --branch flag)
     # Exception: when merging dev→main, stay on dev (don't switch)
