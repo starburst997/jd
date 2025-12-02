@@ -23,6 +23,11 @@ Options:
                           copy settings.json to .claude/, and create JD label
     --apple               Also add Apple App Store and Fastlane secrets
     --suffix SUFFIX       Add suffix to APPSTORE and MATCH_ secrets (use with --apple)
+    --kubeconfig [NS]     Generate and add KUBE_CONFIG secret for namespace NS
+                          Creates 3 namespaces: NS, NS-dev, NS-pr
+                          If NS not specified, auto-detects from charts/*.yaml
+    --kubeconfig-minimal [NS]  Generate and add KUBE_CONFIG secret for single namespace NS
+                          If NS not specified, auto-detects from charts/*.yaml
     --rules               Apply branch protection rulesets (Main and Dev branches)
                           Main: prevents deletion and force pushes
                           Dev: prevents deletion and force pushes
@@ -49,6 +54,10 @@ Examples:
     jd repo --pages                            # Setup GitHub Pages
     jd repo --release                          # Setup release workflow
     jd repo --action                           # Setup release, pages, and JD workflows
+    jd repo --kubeconfig                       # Auto-detect namespace from charts/*.yaml
+    jd repo --kubeconfig myapp                 # Generate KUBE_CONFIG for myapp, myapp-dev, myapp-pr
+    jd repo --kubeconfig-minimal               # Auto-detect namespace, single namespace only
+    jd repo --kubeconfig-minimal myapp         # Generate KUBE_CONFIG for myapp only
     jd repo --npm --extensions --claude        # Add all secrets
     jd repo --public --description "My awesome project"
 
@@ -328,6 +337,108 @@ setup_release_workflow() {
     log "Release workflow configured successfully"
 }
 
+# Detect namespace from charts/*.yaml files
+detect_kubeconfig_namespace() {
+    local repo_root="$1"
+    local charts_dir="$repo_root/charts"
+    local namespace=""
+
+    # Check if charts directory exists
+    if [ ! -d "$charts_dir" ]; then
+        debug "Charts directory not found: $charts_dir"
+        return 1
+    fi
+
+    # First try values.yaml or values.yml
+    for values_file in "$charts_dir/values.yaml" "$charts_dir/values.yml"; do
+        if [ -f "$values_file" ]; then
+            namespace=$(grep -E '^namespace:\s*\S+' "$values_file" 2>/dev/null | head -1 | sed 's/^namespace:\s*//' | tr -d ' "'"'"'')
+            if [ -n "$namespace" ]; then
+                debug "Found namespace in $values_file: $namespace"
+                echo "$namespace"
+                return 0
+            fi
+        fi
+    done
+
+    # If not found in values.yaml/yml, search other yaml files in charts/
+    for yaml_file in "$charts_dir"/*.yaml "$charts_dir"/*.yml; do
+        if [ -f "$yaml_file" ]; then
+            namespace=$(grep -E '^namespace:\s*\S+' "$yaml_file" 2>/dev/null | head -1 | sed 's/^namespace:\s*//' | tr -d ' "'"'"'')
+            if [ -n "$namespace" ]; then
+                debug "Found namespace in $yaml_file: $namespace"
+                echo "$namespace"
+                return 0
+            fi
+        fi
+    done
+
+    debug "No namespace found in charts/*.yaml files"
+    return 1
+}
+
+# Generate and add KUBE_CONFIG secret
+setup_kubeconfig() {
+    local namespace="$1"
+    local minimal="$2"
+    local repo_full_name
+
+    info "Generating kubeconfig for namespace: $namespace"
+
+    # Get repository name with owner
+    if ! repo_full_name=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null); then
+        error "Failed to get repository name"
+        return 1
+    fi
+
+    # Create temporary directory for output
+    local temp_dir
+    temp_dir=$(mktemp -d)
+
+    # Build the command
+    local kubeconfig_script="$JD_CLI_ROOT/scripts/generate-kubeconfig.sh"
+    if [ ! -f "$kubeconfig_script" ]; then
+        error "generate-kubeconfig.sh not found at: $kubeconfig_script"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    local cmd="$kubeconfig_script \"$namespace\" \"$repo_full_name\" --output-dir \"$temp_dir\""
+    if [ "$minimal" = true ]; then
+        cmd="$cmd --minimal"
+    fi
+
+    # Run the script
+    info "Running kubeconfig generation script..."
+    if ! eval "$cmd"; then
+        error "Failed to generate kubeconfig"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Read the generated kubeconfig
+    local kubeconfig_file="$temp_dir/kubeconfig.yaml"
+    if [ ! -f "$kubeconfig_file" ]; then
+        error "Kubeconfig file not created at: $kubeconfig_file"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Add the secret to GitHub
+    info "Adding KUBE_CONFIG secret to GitHub repository..."
+    if cat "$kubeconfig_file" | gh secret set KUBE_CONFIG 2>&1; then
+        log "✓ Added KUBE_CONFIG secret"
+    else
+        error "Failed to add KUBE_CONFIG to GitHub repository"
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Cleanup
+    rm -rf "$temp_dir"
+    log "Kubeconfig setup complete for namespace: $namespace"
+}
+
 # Create or update the JD label
 create_jd_label() {
     info "Ensuring JD label exists..."
@@ -381,6 +492,9 @@ execute_command() {
     local add_pages=false
     local add_release=false
     local suffix=""
+    local add_kubeconfig=false
+    local kubeconfig_namespace=""
+    local kubeconfig_minimal=false
     local visibility="private"
     local description=""
     local skip_init=false
@@ -408,6 +522,27 @@ execute_command() {
             --suffix)
                 suffix="$2"
                 shift 2
+                ;;
+            --kubeconfig)
+                add_kubeconfig=true
+                # Check if next arg is a namespace (not another flag or empty)
+                if [[ -n "$2" && ! "$2" =~ ^-- ]]; then
+                    kubeconfig_namespace="$2"
+                    shift 2
+                else
+                    shift
+                fi
+                ;;
+            --kubeconfig-minimal)
+                add_kubeconfig=true
+                kubeconfig_minimal=true
+                # Check if next arg is a namespace (not another flag or empty)
+                if [[ -n "$2" && ! "$2" =~ ^-- ]]; then
+                    kubeconfig_namespace="$2"
+                    shift 2
+                else
+                    shift
+                fi
                 ;;
             --rules)
                 add_rules=true
@@ -570,6 +705,26 @@ execute_command() {
     if [ "$add_claude" = true ]; then
         setup_claude_workflows "$repo_root" || return 1
         create_jd_label || return 1
+    fi
+
+    # Setup kubeconfig if requested
+    if [ "$add_kubeconfig" = true ]; then
+        # Check kubectl dependency
+        check_command_dependencies "repo-kubeconfig" || return 1
+
+        # Auto-detect namespace if not provided
+        if [ -z "$kubeconfig_namespace" ]; then
+            info "No namespace specified, searching in charts/*.yaml..."
+            kubeconfig_namespace=$(detect_kubeconfig_namespace "$repo_root")
+            if [ -z "$kubeconfig_namespace" ]; then
+                error "No namespace found in charts/*.yaml files"
+                info "Please specify a namespace: jd repo --kubeconfig <namespace>"
+                return 1
+            fi
+            log "Detected namespace: $kubeconfig_namespace"
+        fi
+
+        setup_kubeconfig "$kubeconfig_namespace" "$kubeconfig_minimal" || return 1
     fi
 
     log "Repository initialization complete!"

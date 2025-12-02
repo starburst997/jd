@@ -640,8 +640,9 @@
             </div>
             <div class="command-usage">
               jd repo [--npm] [--extensions] [--claude] [--apple] [--suffix
-              SUFFIX] [--rules] [--rules-strict] [--pages] [--release]
-              [--action] [--public] [--description DESC] [--no-init]
+              SUFFIX] [--kubeconfig NS] [--kubeconfig-minimal NS] [--rules]
+              [--rules-strict] [--pages] [--release] [--action] [--public]
+              [--description DESC] [--no-init]
             </div>
             <ul class="args-list">
               <li>
@@ -673,6 +674,22 @@
                 <span class="arg-desc"
                   >Add suffix to APPSTORE_* and MATCH_* secrets (use with
                   --apple)</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--kubeconfig [NS]</span>
+                <span class="arg-desc"
+                  >Generate and add KUBE_CONFIG secret for namespace NS (creates
+                  NS, NS-dev, NS-pr). Auto-detects from charts/*.yaml if NS not
+                  specified</span
+                >
+              </li>
+              <li>
+                <span class="arg-name">--kubeconfig-minimal [NS]</span>
+                <span class="arg-desc"
+                  >Generate and add KUBE_CONFIG secret for single namespace NS
+                  only. Auto-detects from charts/*.yaml if NS not
+                  specified</span
                 >
               </li>
               <li>

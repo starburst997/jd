@@ -82,6 +82,8 @@ _jd() {
                         '--claude[Also add CLAUDE_CODE_OAUTH_TOKEN secret, copy JD workflows, and create JD label]' \
                         '--apple[Also add Apple App Store and Fastlane secrets]' \
                         '--suffix[Add suffix to APPSTORE and MATCH_ secrets]:suffix:' \
+                        '--kubeconfig[Generate and add KUBE_CONFIG (auto-detects from charts/*.yaml if NS not specified)]:namespace:' \
+                        '--kubeconfig-minimal[Generate and add KUBE_CONFIG for single namespace (auto-detects if not specified)]:namespace:' \
                         '--rules[Apply default branch protection rulesets (Main and Dev branches)]' \
                         '--rules-strict[Apply strict branch protection rulesets (requires pull requests on Main)]' \
                         '--pages[Setup GitHub Pages (copy gh-pages.yml workflow and docs/index.html)]' \

@@ -47,7 +47,7 @@ _jd_completions() {
             COMPREPLY=( $(compgen -W "${dev_opts}" -- ${cur}) )
             ;;
         repo)
-            local repo_opts="--npm --extensions --claude --apple --suffix --rules --rules-strict --pages --gh-pages --release --action --public --description --no-init -h --help"
+            local repo_opts="--npm --extensions --claude --apple --suffix --kubeconfig --kubeconfig-minimal --rules --rules-strict --pages --gh-pages --release --action --public --description --no-init -h --help"
             COMPREPLY=( $(compgen -W "${repo_opts}" -- ${cur}) )
             ;;
         npm)

@@ -220,6 +220,16 @@ jd repo --release
 # Setup all GitHub Actions (shortcut for --release --pages --claude)
 jd repo --action
 
+# Generate kubeconfig (auto-detect namespace from charts/*.yaml)
+jd repo --kubeconfig
+
+# Generate kubeconfig for specific namespace (creates NS, NS-dev, NS-pr)
+jd repo --kubeconfig myapp
+
+# Generate kubeconfig for single namespace only (auto-detect or specify)
+jd repo --kubeconfig-minimal
+jd repo --kubeconfig-minimal myapp
+
 # Initialize with all secrets and configurations
 jd repo --npm --extensions --action --rules
 
@@ -280,6 +290,21 @@ The repo command integrates with 1Password CLI to securely add GitHub secrets:
 - Applies strict branch protection rulesets for `main` and `dev` branches
 - `main` branch: Prevents deletion, force pushes, and requires pull requests (merge/rebase allowed)
 - `dev` branch: Prevents deletion and force pushes
+
+**With `--kubeconfig [namespace]` flag:**
+
+- Generates a kubeconfig for Kubernetes namespace access
+- Creates 3 namespaces: `<namespace>`, `<namespace>-dev`, `<namespace>-pr`
+- Creates a service account with admin access to these namespaces
+- Adds `KUBE_CONFIG` secret to the GitHub repository
+- If namespace not specified, auto-detects from `charts/values.yaml` (or other `charts/*.yaml` files)
+- Requires `kubectl` to be configured with access to the target cluster
+
+**With `--kubeconfig-minimal [namespace]` flag:**
+
+- Same as `--kubeconfig` but only creates the single specified namespace
+- Useful for simpler deployments that don't need dev/pr variants
+- Also supports auto-detection from `charts/*.yaml` if namespace not specified
 
 Secret references in 1Password:
 

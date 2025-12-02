@@ -327,6 +327,15 @@ check_command_dependencies() {
         release)
             check_gh_cli || return 1
             ;;
+        repo)
+            check_gh_cli || return 1
+            check_op_cli || return 1
+            ;;
+        repo-kubeconfig)
+            check_gh_cli || return 1
+            check_op_cli || return 1
+            check_kubectl || return 1
+            ;;
         *)
             # No specific dependencies
             ;;
