@@ -293,13 +293,13 @@ execute_command() {
         log "Would commit and push version bump"
     fi
 
-    # Step 7: Create GitHub release
+    # Step 7: Create GitHub release (using the version that was merged to main)
     info "Step 6: Creating GitHub release on main..."
     if [ "$dry_run" = false ]; then
-        # Create release tag name (e.g., v2025.8)
-        local major minor patch
-        IFS='.' read -r major minor patch <<< "$new_version"
-        local release_tag="v${major}.${minor}"
+        # Create release tag name using CURRENT version (what was merged), not new version
+        local cur_major cur_minor cur_patch
+        IFS='.' read -r cur_major cur_minor cur_patch <<< "$current_version"
+        local release_tag="v${cur_major}.${cur_minor}"
 
         # Create release with auto-generated notes
         if gh release create "$release_tag" \
@@ -317,15 +317,15 @@ execute_command() {
             return 1
         fi
     else
-        local major minor patch
-        IFS='.' read -r major minor patch <<< "$new_version"
-        local release_tag="v${major}.${minor}"
+        local cur_major cur_minor cur_patch
+        IFS='.' read -r cur_major cur_minor cur_patch <<< "$current_version"
+        local release_tag="v${cur_major}.${cur_minor}"
         log "Would create GitHub release: $release_tag on main branch"
     fi
 
     log "✓ Release process completed successfully!"
     info "Summary:"
     info "  - Merged $default_branch into main"
-    info "  - Bumped version: $current_version -> $new_version"
-    info "  - Created release: v${major}.${minor}"
+    info "  - Created release: v${cur_major}.${cur_minor}"
+    info "  - Bumped version for next cycle: $current_version -> $new_version"
 }
