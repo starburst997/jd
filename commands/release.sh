@@ -111,6 +111,11 @@ execute_command() {
     # Default values
     local dry_run=false
 
+    # Variables used across steps (declared at function scope for summary)
+    local current_version=""
+    local new_version=""
+    local release_tag=""
+
     # Parse options
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -220,8 +225,13 @@ execute_command() {
 
     info "Current version: $current_version"
 
+    # Calculate release tag now (before version bump) so it's available for summary
+    local cur_major cur_minor cur_patch
+    IFS='.' read -r cur_major cur_minor cur_patch <<< "$current_version"
+    release_tag="v${cur_major}.${cur_minor}"
+
     # Step 4: Increment minor version
-    local new_version=$(increment_minor_version "$current_version")
+    new_version=$(increment_minor_version "$current_version")
     info "New version: $new_version"
 
     # Update root package.json
@@ -269,63 +279,88 @@ execute_command() {
     # Step 6: Commit and push
     info "Step 5: Committing and pushing version bump..."
     if [ "$dry_run" = false ]; then
-        # Add all changed files
-        git add package.json apps/*/app.config.ts apps/*/package.json 2>/dev/null
+        # Add root package.json (required)
+        debug "Staging package.json..."
+        if ! git add package.json; then
+            error "Failed to stage package.json"
+            return 1
+        fi
+
+        # Add app files if they exist (optional)
+        if [ -d "apps" ]; then
+            for app_dir in apps/*/; do
+                [ -f "${app_dir}app.config.ts" ] && git add "${app_dir}app.config.ts" 2>/dev/null
+                [ -f "${app_dir}package.json" ] && git add "${app_dir}package.json" 2>/dev/null
+            done
+        fi
+
+        # Verify we have staged changes
+        if git diff --cached --quiet; then
+            error "No changes were staged - this is unexpected after version bump"
+            error "Check if package.json was actually modified"
+            git status
+            return 1
+        fi
+
+        # Show what will be committed
+        debug "Staged changes:"
+        [ "$VERBOSE" = true ] && git diff --cached --stat
 
         # Commit
-        if ! git diff --cached --quiet; then
-            git commit -m "Version bump" || {
-                error "Failed to commit version bump"
-                return 1
-            }
-
-            # Push to dev branch
-            git push origin "$default_branch" || {
-                error "Failed to push to $default_branch"
-                return 1
-            }
-
-            log "✓ Committed and pushed version bump"
-        else
-            warning "No changes to commit"
+        debug "Committing version bump..."
+        local commit_output
+        if ! commit_output=$(git commit -m "Version bump" 2>&1); then
+            error "Failed to commit version bump"
+            error "Git output: $commit_output"
+            return 1
         fi
+        debug "$commit_output"
+
+        # Push to dev branch
+        debug "Pushing to $default_branch..."
+        local push_output
+        if ! push_output=$(git push origin "$default_branch" 2>&1); then
+            error "Failed to push to $default_branch"
+            error "Git output: $push_output"
+            return 1
+        fi
+        debug "$push_output"
+
+        log "✓ Committed and pushed version bump"
     else
         log "Would commit and push version bump"
     fi
 
     # Step 7: Create GitHub release (using the version that was merged to main)
     info "Step 6: Creating GitHub release on main..."
-    if [ "$dry_run" = false ]; then
-        # Create release tag name using CURRENT version (what was merged), not new version
-        local cur_major cur_minor cur_patch
-        IFS='.' read -r cur_major cur_minor cur_patch <<< "$current_version"
-        local release_tag="v${cur_major}.${cur_minor}"
+    debug "Release tag: $release_tag"
 
+    if [ "$dry_run" = false ]; then
         # Create release with auto-generated notes
-        if gh release create "$release_tag" \
+        debug "Running: gh release create $release_tag --target main --title $release_tag --generate-notes"
+        local release_output
+        if ! release_output=$(gh release create "$release_tag" \
             --target main \
             --title "$release_tag" \
-            --generate-notes; then
-            log "✓ Created GitHub release: $release_tag"
-
-            # Get release URL
-            local release_url=$(gh release view "$release_tag" --json url -q .url 2>/dev/null)
-            [ -n "$release_url" ] && info "Release URL: $release_url"
-        else
+            --generate-notes 2>&1); then
             error "Failed to create GitHub release"
+            error "gh output: $release_output"
             info "You can create it manually with: gh release create $release_tag --target main --title $release_tag --generate-notes"
             return 1
         fi
+        log "✓ Created GitHub release: $release_tag"
+
+        # Get release URL
+        local release_url
+        release_url=$(gh release view "$release_tag" --json url -q .url 2>/dev/null)
+        [ -n "$release_url" ] && info "Release URL: $release_url"
     else
-        local cur_major cur_minor cur_patch
-        IFS='.' read -r cur_major cur_minor cur_patch <<< "$current_version"
-        local release_tag="v${cur_major}.${cur_minor}"
         log "Would create GitHub release: $release_tag on main branch"
     fi
 
     log "✓ Release process completed successfully!"
     info "Summary:"
     info "  - Merged $default_branch into main"
-    info "  - Created release: v${cur_major}.${cur_minor}"
+    info "  - Created release: $release_tag"
     info "  - Bumped version for next cycle: $current_version -> $new_version"
 }
